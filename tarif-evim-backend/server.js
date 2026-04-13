@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === "development") {
 }
 
 // --- Routes ---
-app.use("/api/auth", require("./middleware/auth"));
+app.use("/api/auth", require("./routes/auth"));
 
 // İlerleyen fazlarda eklenecekler:
 // app.use('/api/recipes', require('./routes/recipes'));
