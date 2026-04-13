@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/errorHandler");
 
+
 // .env yükle
 dotenv.config();
 
@@ -50,8 +51,9 @@ app.use(errorHandler);
 
 // --- Sunucuyu başlat ---
 const PORT = process.env.PORT || 5000;
+const NODE_ENV = process.env.NODE_ENV || "dev";
 app.listen(PORT, () => {
   console.log(
-    `🚀 Sunucu ${process.env.NODE_ENV} modunda ${PORT} portunda çalışıyor`,
+    `🚀 Sunucu ${NODE_ENV} modunda ${PORT} portunda çalışıyor`,
   );
 });
