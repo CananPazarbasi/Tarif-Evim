@@ -42,6 +42,23 @@ const UserSchema = new mongoose.Schema(
         ref: "Recipe",
       },
     ],
+    shoppingList: [
+      {
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        quantity: {
+          type: String,
+          default: "",
+        },
+        checked: {
+          type: Boolean,
+          default: false,
+        },
+      },
+    ],
     // Diyetisyen rolü için ek bilgi
     dietitianInfo: {
       isApproved: { type: Boolean, default: false },

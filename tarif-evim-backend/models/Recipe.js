@@ -31,7 +31,17 @@ const RecipeSchema = new mongoose.Schema(
 
     category: {
       type: String,
-      enum: ["diet", "vegan", "gluten-free", "keto", "general"],
+      enum: [
+        "diet",
+        "vegan",
+        "gluten-free",
+        "keto",
+        "general",
+        "breakfast",
+        "lunch",
+        "dinner",
+        "dessert",
+      ],
       default: "general",
     },
 
@@ -45,6 +55,63 @@ const RecipeSchema = new mongoose.Schema(
       default: null,
     },
 
+    servings: {
+      type: Number,
+      min: 1,
+      default: 1,
+    },
+
+    preparationTime: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    ratingAverage: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
+
+    ratingCount: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    ratings: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        score: {
+          type: Number,
+          min: 1,
+          max: 5,
+          required: true,
+        },
+      },
+    ],
+
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
+
+    approvedAt: {
+      type: Date,
+      default: null,
+    },
+
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -55,5 +122,11 @@ const RecipeSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+RecipeSchema.index({
+  title: "text",
+  description: "text",
+  "ingredients.name": "text",
+});
 
 module.exports = mongoose.model("Recipe", RecipeSchema);

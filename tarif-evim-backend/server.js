@@ -6,6 +6,7 @@ const morgan = require("morgan");
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/errorHandler");
 const recipeRoutes = require("./routes/recipe");
+const userRoutes = require("./routes/user");
 
 // .env yükle
 dotenv.config();
@@ -26,6 +27,8 @@ if (process.env.NODE_ENV === "development") {
 
 // --- Routes ---
 app.use("/api/auth", require("./routes/auth"));
+app.use("/api/recipes", recipeRoutes);
+app.use("/api/users", userRoutes);
 
 // İlerleyen fazlarda eklenecekler:
 // app.use('/api/recipes', require('./routes/recipes'));
@@ -48,8 +51,6 @@ app.use("*", (req, res) => {
 
 // Merkezi hata handler (en sonda olmalı)
 app.use(errorHandler);
-
-app.use("/api/recipes", recipeRoutes);
 
 // --- Sunucuyu başlat ---
 const PORT = process.env.PORT || 5000;
