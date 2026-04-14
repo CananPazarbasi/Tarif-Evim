@@ -1,8 +1,9 @@
 const Recipe = require("../models/Recipe");
+const { getRecipeQueryByRef } = require("./recipeShared");
 
 exports.createRecipe = async (req, res, next) => {
   try {
-    const canAutoApprove = ["dietitian", "admin"].includes(req.user.role);
+    const canAutoApprove = req.user.role === "dietitian";
 
     const recipe = await Recipe.create({
       ...req.body,
@@ -23,7 +24,16 @@ exports.createRecipe = async (req, res, next) => {
 
 exports.updateRecipe = async (req, res, next) => {
   try {
-    let recipe = await Recipe.findById(req.params.id);
+    const recipeQuery = getRecipeQueryByRef(req.params.id);
+
+    if (!recipeQuery) {
+      return res.status(400).json({
+        success: false,
+        message: "Geçersiz tarif referansı",
+      });
+    }
+
+    let recipe = await Recipe.findOne(recipeQuery);
 
     if (!recipe) {
       return res.status(404).json({
@@ -33,9 +43,8 @@ exports.updateRecipe = async (req, res, next) => {
     }
 
     const isOwner = recipe.createdBy.toString() === req.user.id;
-    const isAdmin = req.user.role === "admin";
 
-    if (!isOwner && !isAdmin) {
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         message: "Yetkiniz yok",
@@ -50,7 +59,7 @@ exports.updateRecipe = async (req, res, next) => {
       delete updateData.approvedBy;
     }
 
-    recipe = await Recipe.findByIdAndUpdate(req.params.id, updateData, {
+    recipe = await Recipe.findOneAndUpdate(recipeQuery, updateData, {
       new: true,
       runValidators: true,
     });
@@ -66,7 +75,16 @@ exports.updateRecipe = async (req, res, next) => {
 
 exports.deleteRecipe = async (req, res, next) => {
   try {
-    const recipe = await Recipe.findById(req.params.id);
+    const recipeQuery = getRecipeQueryByRef(req.params.id);
+
+    if (!recipeQuery) {
+      return res.status(400).json({
+        success: false,
+        message: "Geçersiz tarif referansı",
+      });
+    }
+
+    const recipe = await Recipe.findOne(recipeQuery);
 
     if (!recipe) {
       return res.status(404).json({
@@ -76,9 +94,8 @@ exports.deleteRecipe = async (req, res, next) => {
     }
 
     const isOwner = recipe.createdBy.toString() === req.user.id;
-    const isAdmin = req.user.role === "admin";
 
-    if (!isOwner && !isAdmin) {
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         message: "Yetkiniz yok",

@@ -1,7 +1,27 @@
 const mongoose = require("mongoose");
 
+const getNextRecipeNo = async () => {
+  const counters = mongoose.connection.collection("counters");
+  const result = await counters.findOneAndUpdate(
+    { name: "recipeNo" },
+    { $inc: { seq: 1 } },
+    {
+      upsert: true,
+      returnDocument: "after",
+    },
+  );
+
+  return result.value.seq;
+};
+
 const RecipeSchema = new mongoose.Schema(
   {
+    recipeNo: {
+      type: Number,
+      unique: true,
+      index: true,
+    },
+
     title: {
       type: String,
       required: [true, "Başlık zorunludur"],
@@ -120,8 +140,36 @@ const RecipeSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    id: false,
+    toJSON: {
+      transform: (doc, ret) => {
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      },
+    },
+    toObject: {
+      transform: (doc, ret) => {
+        delete ret._id;
+        delete ret.__v;
+        return ret;
+      },
+    },
   },
 );
+
+RecipeSchema.pre("validate", async function (next) {
+  if (!this.isNew || this.recipeNo) {
+    return next();
+  }
+
+  try {
+    this.recipeNo = await getNextRecipeNo();
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
 
 RecipeSchema.index({
   title: "text",

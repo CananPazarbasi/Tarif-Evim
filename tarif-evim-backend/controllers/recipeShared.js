@@ -1,3 +1,5 @@
+const mongoose = require("mongoose");
+
 const recipeBasePopulate = { path: "createdBy", select: "name email role" };
 
 const calculateRating = (ratings) => {
@@ -13,7 +15,22 @@ const calculateRating = (ratings) => {
   };
 };
 
+const getRecipeQueryByRef = (recipeRef) => {
+  const ref = String(recipeRef || "").trim();
+
+  if (/^\d+$/.test(ref)) {
+    return { recipeNo: Number(ref) };
+  }
+
+  if (mongoose.Types.ObjectId.isValid(ref)) {
+    return { _id: ref };
+  }
+
+  return null;
+};
+
 module.exports = {
   recipeBasePopulate,
   calculateRating,
+  getRecipeQueryByRef,
 };

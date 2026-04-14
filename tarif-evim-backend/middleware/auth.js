@@ -40,7 +40,7 @@ exports.protect = async (req, res, next) => {
 };
 
 // Rol bazlı yetkilendirme
-// Kullanım: authorize('admin', 'dietitian')
+// Kullanım: authorize('dietitian')
 exports.authorize = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {

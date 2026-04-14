@@ -1,12 +1,12 @@
 const Recipe = require("../models/Recipe");
-const { recipeBasePopulate } = require("./recipeShared");
+const { recipeBasePopulate, getRecipeQueryByRef } = require("./recipeShared");
 
 exports.getRecipes = async (req, res, next) => {
   try {
     const {
       q,
       category,
-      onlyApproved = "true",
+      onlyApproved,
       sort = "newest",
       page = 1,
       limit = 20,
@@ -20,6 +20,8 @@ exports.getRecipes = async (req, res, next) => {
 
     if (onlyApproved === "true") {
       query.isApproved = true;
+    } else if (onlyApproved === "false") {
+      query.isApproved = false;
     }
 
     if (q) {
@@ -149,9 +151,17 @@ exports.findByIngredients = async (req, res, next) => {
 
 exports.getRecipe = async (req, res, next) => {
   try {
-    const recipe = await Recipe.findById(req.params.id).populate(
-      recipeBasePopulate,
-    );
+    const recipeQuery = getRecipeQueryByRef(req.params.id);
+
+    if (!recipeQuery) {
+      return res.status(400).json({
+        success: false,
+        message: "Geçersiz tarif referansı",
+      });
+    }
+
+    const recipe =
+      await Recipe.findOne(recipeQuery).populate(recipeBasePopulate);
 
     if (!recipe) {
       return res.status(404).json({

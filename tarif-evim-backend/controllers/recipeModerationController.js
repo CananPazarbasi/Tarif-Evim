@@ -1,5 +1,5 @@
 const Recipe = require("../models/Recipe");
-const { calculateRating } = require("./recipeShared");
+const { calculateRating, getRecipeQueryByRef } = require("./recipeShared");
 
 exports.rateRecipe = async (req, res, next) => {
   try {
@@ -12,7 +12,16 @@ exports.rateRecipe = async (req, res, next) => {
       });
     }
 
-    const recipe = await Recipe.findById(req.params.id);
+    const recipeQuery = getRecipeQueryByRef(req.params.id);
+
+    if (!recipeQuery) {
+      return res.status(400).json({
+        success: false,
+        message: "Geçersiz tarif referansı",
+      });
+    }
+
+    const recipe = await Recipe.findOne(recipeQuery);
 
     if (!recipe) {
       return res
@@ -39,7 +48,7 @@ exports.rateRecipe = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: {
-        recipeId: recipe._id,
+        recipeNo: recipe.recipeNo,
         ratingAverage: recipe.ratingAverage,
         ratingCount: recipe.ratingCount,
       },
@@ -51,7 +60,16 @@ exports.rateRecipe = async (req, res, next) => {
 
 exports.approveRecipe = async (req, res, next) => {
   try {
-    const recipe = await Recipe.findById(req.params.id);
+    const recipeQuery = getRecipeQueryByRef(req.params.id);
+
+    if (!recipeQuery) {
+      return res.status(400).json({
+        success: false,
+        message: "Geçersiz tarif referansı",
+      });
+    }
+
+    const recipe = await Recipe.findOne(recipeQuery);
 
     if (!recipe) {
       return res
@@ -85,7 +103,16 @@ exports.chatAboutRecipe = async (req, res, next) => {
       });
     }
 
-    const recipe = await Recipe.findById(req.params.id);
+    const recipeQuery = getRecipeQueryByRef(req.params.id);
+
+    if (!recipeQuery) {
+      return res.status(400).json({
+        success: false,
+        message: "Geçersiz tarif referansı",
+      });
+    }
+
+    const recipe = await Recipe.findOne(recipeQuery);
 
     if (!recipe) {
       return res
@@ -118,7 +145,7 @@ exports.chatAboutRecipe = async (req, res, next) => {
     res.status(200).json({
       success: true,
       data: {
-        recipeId: recipe._id,
+        recipeNo: recipe.recipeNo,
         question: message,
         answer,
       },

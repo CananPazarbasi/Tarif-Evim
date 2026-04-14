@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Recipe = require("../models/Recipe");
+const { getRecipeQueryByRef } = require("./recipeShared");
 
 exports.getShoppingList = async (req, res, next) => {
   try {
@@ -119,17 +120,32 @@ exports.removeShoppingItem = async (req, res, next) => {
 
 exports.buildShoppingListFromRecipes = async (req, res, next) => {
   try {
-    const { recipeIds = [] } = req.body;
+    const { recipeRefs = [], recipeIds = [] } = req.body;
+    const refs =
+      Array.isArray(recipeRefs) && recipeRefs.length > 0
+        ? recipeRefs
+        : recipeIds;
 
-    if (!Array.isArray(recipeIds) || recipeIds.length === 0) {
+    if (!Array.isArray(refs) || refs.length === 0) {
       return res.status(400).json({
         success: false,
-        message: "recipeIds dizisi zorunludur",
+        message: "recipeRefs dizisi zorunludur",
       });
     }
 
-    const recipes = await Recipe.find({ _id: { $in: recipeIds } }).select(
-      "ingredients",
+    const recipeQueries = refs
+      .map((ref) => getRecipeQueryByRef(ref))
+      .filter(Boolean);
+
+    if (recipeQueries.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Geçerli tarif referansı bulunamadı",
+      });
+    }
+
+    const recipes = await Recipe.find({ $or: recipeQueries }).select(
+      "ingredients recipeNo",
     );
 
     const user = await User.findById(req.user.id);
