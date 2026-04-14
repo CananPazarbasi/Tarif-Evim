@@ -5,7 +5,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const connectDB = require("./config/db");
 const errorHandler = require("./middleware/errorHandler");
-
+const recipeRoutes = require("./routes/recipe");
 
 // .env yükle
 dotenv.config();
@@ -49,11 +49,11 @@ app.use("*", (req, res) => {
 // Merkezi hata handler (en sonda olmalı)
 app.use(errorHandler);
 
+app.use("/api/recipes", recipeRoutes);
+
 // --- Sunucuyu başlat ---
 const PORT = process.env.PORT || 5000;
 const NODE_ENV = process.env.NODE_ENV || "dev";
 app.listen(PORT, () => {
-  console.log(
-    `🚀 Sunucu ${NODE_ENV} modunda ${PORT} portunda çalışıyor`,
-  );
+  console.log(`🚀 Sunucu ${NODE_ENV} modunda ${PORT} portunda çalışıyor`);
 });
