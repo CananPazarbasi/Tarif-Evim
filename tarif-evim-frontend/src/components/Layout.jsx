@@ -2,21 +2,27 @@ import React, { useRef, useState } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { searchRecipes } from "../services/recipeService";
+import { CATEGORY_OPTIONS } from "../constants/categories";
 
-const categories = [
-  { label: "Tavuk kategorisi", icon: "🍗", color: "#fb923c" },
-  { label: "Et kategorisi", icon: "🥩", color: "#ef4444" },
-  { label: "Sebze kategorisi", icon: "🥦", color: "#4ade80" },
-  { label: "Baklagiller", icon: "🫘", color: "#a78bfa" },
-  { label: "Deniz mahsülleri", icon: "🐟", color: "#38bdf8" },
-  { label: "Çorba", icon: "🍲", color: "#f59e0b" },
-  { label: "Hamur işleri", icon: "🥐", color: "#fb7185" },
-  { label: "Makarna", icon: "🍝", color: "#f97316" },
-  { label: "Glutensiz kategori", icon: "🌾", color: "#fbbf24" },
-  { label: "Vegan kategorisi", icon: "🌱", color: "#34d399" },
-  { label: "Atıştırmalık ve Tatlı", icon: "🍮", color: "#f472b6" },
-  { label: "Diyetisyen onaylı tarifler", icon: "👨‍⚕️", color: "#60a5fa" },
-];
+const categoryVisualByValue = {
+  "Tavuk kategorisi": { icon: "🍗", color: "#fb923c" },
+  "Et kategorisi": { icon: "🥩", color: "#ef4444" },
+  "Sebze kategorisi": { icon: "🥦", color: "#4ade80" },
+  "Baklagiller": { icon: "🫘", color: "#a78bfa" },
+  "Deniz mahsülleri": { icon: "🐟", color: "#38bdf8" },
+  "Corba": { icon: "🍲", color: "#f59e0b" },
+  "Hamur işleri": { icon: "🥐", color: "#fb7185" },
+  "Makarna": { icon: "🍝", color: "#f97316" },
+  "Glutensiz kategori": { icon: "🌾", color: "#fbbf24" },
+  "Vegan kategorisi": { icon: "🌱", color: "#34d399" },
+  "Atıştırmalık ve Tatlı": { icon: "🍮", color: "#f472b6" },
+  "Diyetisyen onaylı tarifler": { icon: "👨‍⚕️", color: "#60a5fa" },
+};
+
+const categories = CATEGORY_OPTIONS.map((item) => ({
+  ...item,
+  ...(categoryVisualByValue[item.value] || { icon: "🍽️", color: "#fb923c" }),
+}));
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -83,12 +89,19 @@ export default function Layout() {
     }
   };
 
-  const removeAccount = () => {
+  const removeAccount = async () => {
     if (deleteConfirm.trim().toUpperCase() !== "SIL") {
       setSettingsMessage("Hesabı silmek için SIL yazmalısın.");
       return;
     }
-    deleteAccount();
+
+    const result = await deleteAccount();
+
+    if (!result?.ok) {
+      setSettingsMessage(result?.message || "Hesap silinemedi.");
+      return;
+    }
+
     setShowProfileMenu(false);
     closeSettingsPanel();
     navigate("/");
@@ -449,8 +462,8 @@ export default function Layout() {
           </p>
           {categories.map((cat) => (
             <Link
-              key={cat.label}
-              to={`/?category=${cat.label}`}
+              key={cat.value}
+              to={`/?category=${cat.value}`}
               onClick={() => setSidebarOpen(false)}
               style={{
                 display: "flex",

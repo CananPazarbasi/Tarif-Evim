@@ -7,6 +7,7 @@ const {
   getMe,
   refreshToken,
   updatePassword,
+  deleteMe,
 } = require("../controllers/authController");
 const { protect } = require("../middleware/auth");
 
@@ -28,6 +29,7 @@ const loginValidation = [
 router.post("/register", registerValidation, register);
 router.post("/login", loginValidation, login);
 router.get("/me", protect, getMe);
+router.delete("/me", protect, deleteMe);
 router.post("/refresh-token", refreshToken);
 router.put("/update-password", protect, updatePassword);
 

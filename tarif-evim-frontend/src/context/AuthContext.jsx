@@ -5,6 +5,7 @@ const AuthContext = createContext(null);
 const USER_KEY = "tarif-evim-user";
 
 const normalizeUser = (rawUser) => ({
+  id: String(rawUser?._id || rawUser?.id || ""),
   name: rawUser?.name || "Kullanici",
   email: rawUser?.email || "",
   role: rawUser?.role || "user",
@@ -113,11 +114,16 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const deleteAccount = () => {
-    localStorage.removeItem(USER_KEY);
-    tokenStorage.clear();
-    setUser(null);
-    return { ok: true };
+  const deleteAccount = async () => {
+    try {
+      await apiClient.delete("/auth/me", { auth: true });
+      localStorage.removeItem(USER_KEY);
+      tokenStorage.clear();
+      setUser(null);
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, message: error.message || "Hesap silinemedi" };
+    }
   };
 
   const value = useMemo(

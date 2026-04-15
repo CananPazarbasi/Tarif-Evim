@@ -2,30 +2,6 @@ import { apiClient } from "./apiClient";
 
 let cachedRecipes = [];
 
-const categoryUiToApi = {
-  "Diyet": "diet",
-  "Vegan": "vegan",
-  "Glutensiz kategori": "gluten-free",
-  "Glütensiz": "gluten-free",
-  "Tatlı": "dessert",
-  "Atıştırmalık ve Tatlı": "dessert",
-  "Kahvaltı": "breakfast",
-  "Öğle Yemeği": "lunch",
-  "Akşam Yemeği": "dinner",
-};
-
-const categoryApiToUi = {
-  "diet": "Diyet",
-  "vegan": "Vegan",
-  "gluten-free": "Glütensiz",
-  "keto": "Diyet",
-  "general": "Genel",
-  "breakfast": "Kahvaltı",
-  "lunch": "Öğle Yemeği",
-  "dinner": "Akşam Yemeği",
-  "dessert": "Tatlı",
-};
-
 const ingredientRegex = /^(\d+(?:[.,]\d+)?(?:\/\d+(?:[.,]\d+)?)?)\s+(.*)$/;
 
 const normalizeIngredients = (ingredients = []) =>
@@ -47,18 +23,23 @@ const normalizeRecipe = (recipe) => ({
     "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=80",
   calories: Number(recipe.calories || 0),
   servings: Number(recipe.servings || 1),
-  category: categoryApiToUi[recipe.category] || recipe.category || "Genel",
+  category: String(recipe.category || "Sebze kategorisi"),
+  categoryValue: String(recipe.category || "Sebze kategorisi"),
   dietitianApproved: Boolean(recipe.isApproved),
   ingredients: normalizeIngredients(recipe.ingredients),
   steps: Array.isArray(recipe.steps) ? recipe.steps : [],
   ratingAverage: Number(recipe.ratingAverage || 0),
   ratingCount: Number(recipe.ratingCount || 0),
+  createdById:
+    recipe?.createdBy && typeof recipe.createdBy === "object"
+      ? String(recipe.createdBy._id || "")
+      : String(recipe.createdBy || ""),
 });
 
 const toCreatePayload = (recipeInput) => ({
   title: String(recipeInput.title || "").trim(),
   description: String(recipeInput.description || "").trim(),
-  category: categoryUiToApi[recipeInput.category] || "general",
+  category: String(recipeInput.categoryValue || recipeInput.category || "Sebze kategorisi"),
   calories: Number(recipeInput.calories || 0),
   servings: Number(recipeInput.servings || 1),
   image: String(recipeInput.image || "").trim() || null,
@@ -129,4 +110,14 @@ export const rateRecipe = async (recipeId, score) => {
 export const chatAboutRecipe = async (recipeId, message) => {
   const response = await apiClient.post(`/recipes/${recipeId}/chat`, { message }, { auth: true });
   return response?.data?.answer || "";
+};
+
+export const approveRecipe = async (recipeId) => {
+  const response = await apiClient.post(`/recipes/${recipeId}/approve`, {}, { auth: true });
+  return normalizeRecipe(response?.data || {});
+};
+
+export const deleteRecipe = async (recipeId) => {
+  await apiClient.delete(`/recipes/${recipeId}`, { auth: true });
+  cachedRecipes = cachedRecipes.filter((recipe) => recipe.id !== Number(recipeId));
 };

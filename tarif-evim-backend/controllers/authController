@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const User = require("../models/User");
+const Recipe = require("../models/Recipe");
 const { sendTokenResponse, generateAccessToken } = require("../utils/token");
 const jwt = require("jsonwebtoken");
 
@@ -152,6 +153,31 @@ exports.updatePassword = async (req, res, next) => {
     await user.save();
 
     sendTokenResponse(user, 200, res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Hesabı kalıcı olarak sil
+// @route   DELETE /api/auth/me
+// @access  Private
+exports.deleteMe = async (req, res, next) => {
+  try {
+    await Recipe.deleteMany({ createdBy: req.user.id });
+
+    const deletedUser = await User.findByIdAndDelete(req.user.id);
+
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Kullanıcı bulunamadı",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Hesap başarıyla silindi",
+    });
   } catch (error) {
     next(error);
   }

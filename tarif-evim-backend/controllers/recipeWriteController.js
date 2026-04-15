@@ -3,14 +3,12 @@ const { getRecipeQueryByRef } = require("./recipeShared");
 
 exports.createRecipe = async (req, res, next) => {
   try {
-    const canAutoApprove = req.user.role === "dietitian";
-
     const recipe = await Recipe.create({
       ...req.body,
       createdBy: req.user.id,
-      isApproved: canAutoApprove,
-      approvedBy: canAutoApprove ? req.user.id : null,
-      approvedAt: canAutoApprove ? new Date() : null,
+      isApproved: false,
+      approvedBy: null,
+      approvedAt: null,
     });
 
     res.status(201).json({
@@ -94,8 +92,9 @@ exports.deleteRecipe = async (req, res, next) => {
     }
 
     const isOwner = recipe.createdBy.toString() === req.user.id;
+    const isDietitian = req.user.role === "dietitian";
 
-    if (!isOwner) {
+    if (!isOwner && !isDietitian) {
       return res.status(403).json({
         success: false,
         message: "Yetkiniz yok",

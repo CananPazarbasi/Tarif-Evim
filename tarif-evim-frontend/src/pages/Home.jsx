@@ -2,21 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import RecipeCard from "../components/RecipeCard";
 import { getPopularRecipes, getRecipes } from "../services/recipeService";
-
-const CATEGORIES = [
-  "Tavuk kategorisi",
-  "Et kategorisi",
-  "Sebze kategorisi",
-  "Baklagiller",
-  "Deniz mahsülleri",
-  "Çorba",
-  "Hamur işleri",
-  "Makarna",
-  "Glutensiz kategori",
-  "Vegan kategorisi",
-  "Atıştırmalık ve Tatlı",
-  "Diyetisyen onaylı tarifler",
-];
+import { CATEGORY_OPTIONS } from "../constants/categories";
+import { useAuth } from "../context/AuthContext";
 
 const includesAny = (textList, terms) => {
   const combined = textList.join(" ").toLowerCase();
@@ -26,19 +13,18 @@ const includesAny = (textList, terms) => {
 const categoryMatchers = {
   "Tavuk kategorisi": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["tavuk"]),
   "Et kategorisi": (recipe) =>
-    includesAny([recipe.title, ...recipe.ingredients], ["et", "dana", "kuzu", "kıyma", "köfte"]) &&
+    includesAny([recipe.title, ...recipe.ingredients], ["et", "dana", "kuzu", "kiyma", "kofte"]) &&
     !includesAny([recipe.title, ...recipe.ingredients], ["tavuk"]),
   "Sebze kategorisi": (recipe) =>
     includesAny([recipe.title, ...recipe.ingredients], [
       "sebze",
       "salata",
       "mercimek",
-      "kinoa",
       "domates",
-      "salatalık",
-      "havuç",
+      "salatalik",
+      "havuc",
       "brokoli",
-      "ıspanak",
+      "ispanak",
     ]),
   "Baklagiller": (recipe) =>
     includesAny([recipe.title, ...recipe.ingredients], [
@@ -47,34 +33,24 @@ const categoryMatchers = {
       "nohut",
       "fasulye",
       "barbunya",
-      "börülce",
+      "borulce",
       "bezelye",
     ]),
-  "Deniz mahsülleri": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["balık", "balik", "somon", "hamsi", "levrek", "ton", "karides", "midye", "kalamar"]),
-  "Çorba": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["çorba", "corba"]),
-  "Hamur işleri": (recipe) =>
-    includesAny([recipe.title, ...recipe.ingredients], [
-      "hamur",
-      "poğaça",
-      "pogaca",
-      "börek",
-      "borek",
-      "ekmek",
-      "mantı",
-      "manti",
-      "un",
-    ]),
+  "Deniz mahsülleri": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["balik", "somon", "hamsi", "levrek", "ton", "karides", "midye", "kalamar"]),
+  "Corba": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["corba", "çorba"]),
+  "Hamur işleri": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["hamur", "pogaca", "poğaça", "borek", "börek", "ekmek", "manti", "mantı", "un"]),
   "Makarna": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["makarna", "spagetti", "penne"]),
-  "Glutensiz kategori": (recipe) => recipe.category === "Glütensiz",
-  "Vegan kategorisi": (recipe) => recipe.category === "Vegan",
+  "Glutensiz kategori": (recipe) => recipe.category === "Glutensiz kategori",
+  "Vegan kategorisi": (recipe) => recipe.category === "Vegan kategorisi",
   "Atıştırmalık ve Tatlı": (recipe) =>
-    recipe.category === "Tatlı" ||
-    includesAny([recipe.title, ...recipe.ingredients], ["atıştırmalık", "bar", "kurabiye", "tatlı"]),
+    recipe.category === "Atıştırmalık ve Tatlı" ||
+    includesAny([recipe.title, ...recipe.ingredients], ["atistirmalik", "atıştırmalık", "bar", "kurabiye", "tatli", "tatlı"]),
   "Diyetisyen onaylı tarifler": (recipe) => recipe.dietitianApproved,
 };
 
 export default function Home() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const [recipes, setRecipes] = useState([]);
   const [popularRecipes, setPopularRecipes] = useState([]);
@@ -90,8 +66,9 @@ export default function Home() {
     const loadRecipes = async () => {
       setLoading(true);
       try {
+        const isDietitian = user?.role === "dietitian";
         const [allRecipes, popular] = await Promise.all([
-          getRecipes({ onlyApproved: true, limit: 100 }),
+          getRecipes({ onlyApproved: isDietitian ? undefined : true, limit: 100 }),
           getPopularRecipes(),
         ]);
         setRecipes(allRecipes);
@@ -107,15 +84,21 @@ export default function Home() {
     };
 
     loadRecipes();
-  }, []);
+  }, [user?.role]);
+
+  useEffect(() => {
+    setActiveCategory(searchParams.get("category") || "Tümü");
+  }, [searchParams]);
 
   const filtered = useMemo(() => recipes.filter((r) => {
     const matcher = categoryMatchers[activeCategory];
-    const catMatch = activeCategory === "Tümü" || !matcher || matcher(r);
-    const ingMatch = !ingredientQuery || r.ingredients.some((i) =>
+    const categoryMatch = activeCategory === "Tümü" || !matcher || matcher(r);
+
+    const ingredientMatch = !ingredientQuery || r.ingredients.some((i) =>
       i.toLowerCase().includes(ingredientQuery.toLowerCase())
     );
-    return catMatch && ingMatch;
+
+    return categoryMatch && ingredientMatch;
   }), [activeCategory, ingredientQuery, recipes]);
 
   const suggestRecipe = () => {
@@ -296,26 +279,26 @@ export default function Home() {
             boxShadow: activeCategory === "Tümü" ? "0 4px 12px rgba(255,107,53,0.3)" : "none",
           }}
         >Tümü</button>
-        {CATEGORIES.map((cat) => (
+        {CATEGORY_OPTIONS.map((cat) => (
           <button
-            key={cat}
-            onClick={() => setActiveCategory(cat)}
+            key={cat.value}
+            onClick={() => setActiveCategory(cat.value)}
             style={{
               padding: "10px 20px",
               borderRadius: 50,
-              border: activeCategory === cat ? "none" : "2px solid #e8e0d8",
-              background: activeCategory === cat
+              border: activeCategory === cat.value ? "none" : "2px solid #e8e0d8",
+              background: activeCategory === cat.value
                 ? "linear-gradient(135deg, #ff6b35, #f7931e)"
                 : "white",
-              color: activeCategory === cat ? "white" : "#666",
+              color: activeCategory === cat.value ? "white" : "#666",
               fontWeight: 700,
               fontSize: 13,
               cursor: "pointer",
               fontFamily: "inherit",
               transition: "all .2s",
-              boxShadow: activeCategory === cat ? "0 4px 12px rgba(255,107,53,0.3)" : "none",
+              boxShadow: activeCategory === cat.value ? "0 4px 12px rgba(255,107,53,0.3)" : "none",
             }}
-          >{cat}</button>
+          >{cat.label}</button>
         ))}
         <div style={{ marginLeft: "auto", color: "#999", fontSize: 13, display: "flex", alignItems: "center" }}>
           {filtered.length} tarif bulundu

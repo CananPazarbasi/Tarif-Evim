@@ -2,27 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createRecipe } from "../services/recipeService";
 import { useAuth } from "../context/AuthContext";
-
-const CATEGORIES = [
-  "Tavuk kategorisi",
-  "Et kategorisi",
-  "Sebze kategorisi",
-  "Baklagiller",
-  "Deniz mahsülleri",
-  "Çorba",
-  "Hamur işleri",
-  "Makarna",
-  "Glutensiz kategori",
-  "Vegan kategorisi",
-  "Atıştırmalık ve Tatlı",
-  "Diyetisyen onaylı tarifler",
-];
+import { CATEGORY_OPTIONS } from "../constants/categories";
 
 export default function AddRecipe() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [form, setForm] = useState({
-    title: "", category: "Tavuk kategorisi", calories: "", servings: "",
+    title: "", categoryValue: "Tavuk kategorisi", calories: "", servings: "",
     ingredients: [""], steps: [""],
   });
   const [submitted, setSubmitted] = useState(false);
@@ -60,8 +46,8 @@ export default function AddRecipe() {
   if (submitted) return (
     <div style={{ textAlign: "center", padding: "100px 0" }}>
       <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#1a1a1a" }}>Tarif Eklendi!</h2>
-      <p style={{ color: "#999" }}>Ana sayfaya yönlendiriliyorsunuz...</p>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#1a1a1a" }}>Tarif Gönderildi!</h2>
+      <p style={{ color: "#999" }}>Tarifin diyetisyen onayından sonra yayınlanacak.</p>
     </div>
   );
 
@@ -92,8 +78,10 @@ export default function AddRecipe() {
           </FieldRow>
           <FieldRow cols={3}>
             <Field label="Kategori">
-              <select value={form.category} onChange={e => update("category", e.target.value)} style={inputStyle}>
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              <select value={form.categoryValue} onChange={e => update("categoryValue", e.target.value)} style={inputStyle}>
+                {CATEGORY_OPTIONS.map((category) => (
+                  <option key={category.value} value={category.value}>{category.label}</option>
+                ))}
               </select>
             </Field>
             <Field label="Kalori (kcal)">
