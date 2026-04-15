@@ -43,6 +43,13 @@ exports.login = async (req, res, next) => {
 
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email ve şifre zorunludur",
+      });
+    }
+
     // Şifre dahil kullanıcıyı getir (select: false olduğu için özel çekiyoruz)
     const user = await User.findOne({ email }).select("+password");
 
@@ -118,7 +125,21 @@ exports.updatePassword = async (req, res, next) => {
   try {
     const { currentPassword, newPassword } = req.body;
 
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Mevcut şifre ve yeni şifre zorunludur",
+      });
+    }
+
     const user = await User.findById(req.user.id).select("+password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Kullanıcı bulunamadı",
+      });
+    }
 
     const isMatch = await user.matchPassword(currentPassword);
     if (!isMatch) {
