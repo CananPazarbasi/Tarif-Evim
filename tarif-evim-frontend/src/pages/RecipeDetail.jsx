@@ -1,19 +1,46 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { getRecipeById } from "../services/recipeService";
+import { chatAboutRecipe, getRecipeById } from "../services/recipeService";
 import { useFavorites } from "../context/FavoritesContext";
 import StarRating from "../components/StarRating";
+import { useAuth } from "../context/AuthContext";
 
 export default function RecipeDetail() {
   const { id } = useParams();
-  const recipe = getRecipeById(id);
+  const { user } = useAuth();
+  const [recipe, setRecipe] = useState(null);
+  const [recipeLoading, setRecipeLoading] = useState(true);
   const { toggleFavorite, isFavorite } = useFavorites();
-  const [chatMessages, setChatMessages] = useState([
-    { role: "ai", text: `Merhaba! "${recipe?.title}" tarifi hakkında sormak istediğin bir şey var mı? 👨‍🍳` }
-  ]);
+  const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [favoriteWarning, setFavoriteWarning] = useState("");
+
+  useEffect(() => {
+    const loadRecipe = async () => {
+      setRecipeLoading(true);
+      try {
+        const nextRecipe = await getRecipeById(id);
+        setRecipe(nextRecipe);
+        setChatMessages([
+          {
+            role: "ai",
+            text: `Merhaba! "${nextRecipe?.title || "bu"}" tarifi hakkında sormak istedigin bir sey var mi? 👨‍🍳`,
+          },
+        ]);
+      } catch {
+        setRecipe(null);
+      } finally {
+        setRecipeLoading(false);
+      }
+    };
+
+    loadRecipe();
+  }, [id]);
+
+  if (recipeLoading) {
+    return <div style={{ textAlign: "center", padding: 80, color: "#999", fontWeight: 700 }}>Tarif yukleniyor...</div>;
+  }
 
   if (!recipe) return (
     <div style={{ textAlign: "center", padding: 80 }}>
@@ -25,8 +52,8 @@ export default function RecipeDetail() {
 
   const fav = isFavorite(recipe.id);
 
-  const handleToggleFavorite = () => {
-    const result = toggleFavorite(recipe);
+  const handleToggleFavorite = async () => {
+    const result = await toggleFavorite(recipe);
     if (!result?.ok) {
       setFavoriteWarning(result.message || "Lutfen giris yapin.");
       window.setTimeout(() => setFavoriteWarning(""), 2200);
@@ -41,29 +68,14 @@ export default function RecipeDetail() {
     setLoading(true);
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: `Sen "Tarif Evim" uygulamasının yemek asistanısın. Şu an kullanıcı "${recipe.title}" tarifini görüntülüyor. 
-Tarif bilgisi: Malzemeler: ${recipe.ingredients.join(", ")}. 
-Adımlar: ${recipe.steps.join(" ")}
-Kısa, yardımcı ve samimi yanıtlar ver. Türkçe konuş.`,
-          messages: [
-            ...chatMessages
-              .filter(m => m.role !== "ai" || chatMessages.indexOf(m) > 0)
-              .map(m => ({ role: m.role === "ai" ? "assistant" : "user", content: m.text })),
-            { role: "user", content: userMsg }
-          ],
-        }),
-      });
-      const data = await response.json();
-      const aiText = data.content?.find(b => b.type === "text")?.text || "Bir hata oluştu.";
+      if (!user) {
+        throw new Error("AI asistani icin lutfen giris yapin.");
+      }
+
+      const aiText = await chatAboutRecipe(recipe.id, userMsg);
       setChatMessages(prev => [...prev, { role: "ai", text: aiText }]);
-    } catch {
-      setChatMessages(prev => [...prev, { role: "ai", text: "Bağlantı hatası. Lütfen tekrar deneyin." }]);
+    } catch (error) {
+      setChatMessages(prev => [...prev, { role: "ai", text: error.message || "Baglanti hatasi. Lutfen tekrar deneyin." }]);
     }
     setLoading(false);
   };

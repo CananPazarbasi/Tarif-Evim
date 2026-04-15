@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Outlet, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { searchRecipes } from "../services/recipeService";
@@ -30,6 +30,7 @@ export default function Layout() {
   const [deleteConfirm, setDeleteConfirm] = useState("");
   const [settingsMessage, setSettingsMessage] = useState("");
   const { user, logout, updateProfile, changePassword, deleteAccount } = useAuth();
+  const searchRequestRef = useRef(0);
   const navigate = useNavigate();
 
   const openSettingsPanel = (panel) => {
@@ -66,7 +67,7 @@ export default function Layout() {
     setSettingsMessage("Profil bilgileri güncellendi.");
   };
 
-  const savePassword = () => {
+  const savePassword = async () => {
     if (!passwordForm.current || !passwordForm.next || !passwordForm.confirm) {
       setSettingsMessage("Tüm şifre alanlarını doldurun.");
       return;
@@ -75,7 +76,7 @@ export default function Layout() {
       setSettingsMessage("Yeni şifreler eşleşmiyor.");
       return;
     }
-    const result = changePassword({ currentPassword: passwordForm.current, newPassword: passwordForm.next });
+    const result = await changePassword({ currentPassword: passwordForm.current, newPassword: passwordForm.next });
     setSettingsMessage(result.message || "");
     if (result.ok) {
       setPasswordForm({ current: "", next: "", confirm: "" });
@@ -93,13 +94,28 @@ export default function Layout() {
     navigate("/");
   };
 
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     const q = e.target.value;
     setSearchQuery(q);
-    if (q.length > 1) {
-      setSearchResults(searchRecipes(q));
+    if (q.trim().length <= 1) {
+      setShowResults(false);
+      setSearchResults([]);
+      return;
+    }
+
+    const requestId = ++searchRequestRef.current;
+    try {
+      const results = await searchRecipes(q);
+      if (requestId !== searchRequestRef.current) {
+        return;
+      }
+      setSearchResults(results);
       setShowResults(true);
-    } else {
+    } catch {
+      if (requestId !== searchRequestRef.current) {
+        return;
+      }
+      setSearchResults([]);
       setShowResults(false);
     }
   };

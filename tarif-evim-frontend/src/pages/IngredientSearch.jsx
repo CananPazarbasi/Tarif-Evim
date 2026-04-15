@@ -1,6 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { RECIPES } from "../services/recipeService";
+import { getRecipes } from "../services/recipeService";
 
 const normalizeText = (value) =>
   value
@@ -53,9 +53,27 @@ const computeMatch = (recipe, userIngredients) => {
 };
 
 export default function IngredientSearch() {
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [inputValue, setInputValue] = useState("");
   const [selectedIngredients, setSelectedIngredients] = useState([]);
   const [searched, setSearched] = useState(false);
+
+  useEffect(() => {
+    const loadRecipes = async () => {
+      setLoading(true);
+      try {
+        const allRecipes = await getRecipes({ onlyApproved: true, limit: 100 });
+        setRecipes(allRecipes);
+      } catch {
+        setRecipes([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRecipes();
+  }, []);
 
   const addIngredient = () => {
     const value = inputValue.trim();
@@ -79,10 +97,10 @@ export default function IngredientSearch() {
   const searchResults = useMemo(() => {
     if (!searched || selectedIngredients.length === 0) return [];
 
-    return RECIPES.map((recipe) => computeMatch(recipe, selectedIngredients))
+    return recipes.map((recipe) => computeMatch(recipe, selectedIngredients))
       .filter((item) => item.matched > 0)
       .sort((a, b) => b.ratio - a.ratio || b.matched - a.matched || a.recipe.title.localeCompare(b.recipe.title));
-  }, [searched, selectedIngredients]);
+  }, [recipes, searched, selectedIngredients]);
 
   const topResult = searchResults[0];
 
@@ -108,6 +126,9 @@ export default function IngredientSearch() {
           <p style={{ margin: "10px 0 18px", color: "#6b7280", fontSize: 16, maxWidth: 760 }}>
             Elindeki malzemeleri ekle, sana en uygun tarifleri eslesme oranina gore siralayalim.
           </p>
+          {loading && (
+            <p style={{ margin: "0 0 10px", color: "#9ca3af", fontSize: 13, fontWeight: 700 }}>Tarifler yukleniyor...</p>
+          )}
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
             <input

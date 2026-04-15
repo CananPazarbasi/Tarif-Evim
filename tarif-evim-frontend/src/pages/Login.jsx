@@ -6,13 +6,20 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email || !password) { setError("Tüm alanları doldurun."); return; }
-    login({ name: email.split("@")[0], email, role: "user", password });
+    setSubmitting(true);
+    const result = await login({ email, password });
+    setSubmitting(false);
+    if (!result.ok) {
+      setError(result.message || "Giris yapilamadi.");
+      return;
+    }
     navigate("/");
   };
 
@@ -72,7 +79,7 @@ export default function Login() {
             <Field label="E-posta" type="email" value={email} onChange={setEmail} placeholder="ornek@mail.com" />
             <Field label="Şifre" type="password" value={password} onChange={setPassword} placeholder="••••••••" />
 
-            <button type="submit" style={{
+            <button type="submit" disabled={submitting} style={{
               width: "100%",
               background: "linear-gradient(135deg, #ff6b35, #f7931e)",
               color: "white",
@@ -85,7 +92,8 @@ export default function Login() {
               fontFamily: "inherit",
               boxShadow: "0 4px 16px rgba(255,107,53,0.3)",
               marginTop: 8,
-            }}>Giriş Yap →</button>
+              opacity: submitting ? 0.7 : 1,
+            }}>{submitting ? "Giris yapiliyor..." : "Giriş Yap →"}</button>
           </form>
 
           <p style={{ textAlign: "center", marginTop: 24, color: "#999", fontSize: 13 }}>

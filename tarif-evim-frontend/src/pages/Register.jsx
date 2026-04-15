@@ -13,14 +13,21 @@ export default function Register() {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("user");
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
+  const { register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name || !email || !password) { setError("Tüm alanları doldurun."); return; }
     if (password.length < 6) { setError("Şifre en az 6 karakter olmalı."); return; }
-    login({ name, email, role, password });
+    setSubmitting(true);
+    const result = await register({ name, email, password, role });
+    setSubmitting(false);
+    if (!result.ok) {
+      setError(result.message || "Kayit olunamadi.");
+      return;
+    }
     navigate("/");
   };
 
@@ -102,7 +109,7 @@ export default function Register() {
             <Field label="E-posta" type="email" value={email} onChange={setEmail} placeholder="ornek@mail.com" />
             <Field label="Şifre" type="password" value={password} onChange={setPassword} placeholder="En az 6 karakter" />
 
-            <button type="submit" style={{
+            <button type="submit" disabled={submitting} style={{
               width: "100%",
               background: "linear-gradient(135deg, #ff6b35, #f7931e)",
               color: "white",
@@ -115,7 +122,8 @@ export default function Register() {
               fontFamily: "inherit",
               boxShadow: "0 4px 16px rgba(255,107,53,0.3)",
               marginTop: 8,
-            }}>Kayıt Ol →</button>
+              opacity: submitting ? 0.7 : 1,
+            }}>{submitting ? "Kayit olusturuluyor..." : "Kayıt Ol →"}</button>
           </form>
 
           <p style={{ textAlign: "center", marginTop: 24, color: "#999", fontSize: 13 }}>

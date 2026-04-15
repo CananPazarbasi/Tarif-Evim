@@ -1,6 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { RECIPES } from "../services/recipeService";
+import { useAuth } from "../context/AuthContext";
+import { getRecipes } from "../services/recipeService";
+import {
+  addShoppingItem,
+  clearShoppingList,
+  getShoppingList,
+  removeShoppingItem,
+  updateShoppingItem,
+} from "../services/shoppingListService";
 
 const parseQuantity = (raw) => {
   if (!raw) return null;
@@ -18,7 +26,6 @@ const formatQuantity = (value) => {
   return rounded.toFixed(2).replace(/\.00$/, "").replace(/0$/, "").replace(".", ",");
 };
 
-// Scales the leading numeric part in ingredient text, if present.
 const scaleIngredient = (ingredient, factor) => {
   const match = ingredient.match(/^(\d+(?:[.,]\d+)?(?:\/\d+(?:[.,]\d+)?)?)\s+(.*)$/);
   if (!match) return ingredient;
@@ -38,27 +45,57 @@ const normalizeText = (value) =>
     .replace(/ç/g, "c")
     .trim();
 
+const withLocalId = (item, idx = 0) => ({
+  ...item,
+  id: item.id || item._id || `${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 7)}`,
+});
+
 export default function ShoppingList() {
+  const { user } = useAuth();
   const [searchParams] = useSearchParams();
-  const initialRecipes = (searchParams.get("recipes") || "")
-    .split(",")
-    .map((id) => Number(id))
-    .filter((id) => RECIPES.some((r) => r.id === id));
-  const [selectedRecipeIds, setSelectedRecipeIds] = useState(initialRecipes.length ? initialRecipes : [RECIPES[0]?.id].filter(Boolean));
+  const [recipes, setRecipes] = useState([]);
+  const [selectedRecipeIds, setSelectedRecipeIds] = useState([]);
   const [personCount, setPersonCount] = useState(Math.max(1, Number(searchParams.get("persons")) || 2));
   const [manualMenuInput, setManualMenuInput] = useState("");
   const [unmatchedMenus, setUnmatchedMenus] = useState([]);
   const [items, setItems] = useState([]);
   const [newItem, setNewItem] = useState("");
+  const [syncing, setSyncing] = useState(false);
 
-  const toggleItem = (id) => setItems(prev => prev.map(i => i.id === id ? { ...i, checked: !i.checked } : i));
-  const addItem = () => {
-    if (!newItem.trim()) return;
-    setItems(prev => [...prev, { id: Date.now(), name: newItem.trim(), checked: false }]);
-    setNewItem("");
-  };
-  const removeItem = (id) => setItems(prev => prev.filter(i => i.id !== id));
-  const clearChecked = () => setItems(prev => prev.filter(i => !i.checked));
+  useEffect(() => {
+    const loadRecipes = async () => {
+      try {
+        const loaded = await getRecipes({ onlyApproved: true, limit: 100 });
+        setRecipes(loaded);
+        const initialRecipes = (searchParams.get("recipes") || "")
+          .split(",")
+          .map((id) => Number(id))
+          .filter((id) => loaded.some((r) => r.id === id));
+        setSelectedRecipeIds(initialRecipes.length ? initialRecipes : [loaded[0]?.id].filter(Boolean));
+      } catch {
+        setRecipes([]);
+        setSelectedRecipeIds([]);
+      }
+    };
+
+    loadRecipes();
+  }, [searchParams]);
+
+  useEffect(() => {
+    const loadShoppingList = async () => {
+      if (!user) return;
+      try {
+        const data = await getShoppingList();
+        setItems(data);
+      } catch {
+        setItems([]);
+      }
+    };
+
+    loadShoppingList();
+  }, [user]);
+
+  const checked = useMemo(() => items.filter((i) => i.checked).length, [items]);
 
   const toggleRecipe = (id) => {
     setSelectedRecipeIds((prev) => (
@@ -66,7 +103,23 @@ export default function ShoppingList() {
     ));
   };
 
-  const generateFromSelection = () => {
+  const syncUserItems = async (nextItems) => {
+    if (!user) return;
+
+    setSyncing(true);
+    try {
+      await clearShoppingList();
+      let snapshot = [];
+      for (const item of nextItems) {
+        snapshot = await addShoppingItem({ name: item.name, quantity: item.quantity || "" });
+      }
+      setItems(snapshot);
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const generateFromSelection = async () => {
     const manualNames = manualMenuInput
       .split(/[\n,]/)
       .map((name) => name.trim())
@@ -77,7 +130,7 @@ export default function ShoppingList() {
 
     manualNames.forEach((menuName) => {
       const normalizedMenu = normalizeText(menuName);
-      const match = RECIPES.find((recipe) => {
+      const match = recipes.find((recipe) => {
         const normalizedTitle = normalizeText(recipe.title);
         return normalizedTitle.includes(normalizedMenu) || normalizedMenu.includes(normalizedTitle);
       });
@@ -91,27 +144,107 @@ export default function ShoppingList() {
     const allRecipeIds = [...new Set([...selectedRecipeIds, ...matchedManualIds])];
 
     if (allRecipeIds.length === 0) {
-      setItems([]);
       setUnmatchedMenus(unmatched);
+      if (user) {
+        await syncUserItems([]);
+      } else {
+        setItems([]);
+      }
       return;
     }
 
-    const selectedRecipes = RECIPES.filter((recipe) => allRecipeIds.includes(recipe.id));
+    const selectedRecipes = recipes.filter((recipe) => allRecipeIds.includes(recipe.id));
     const generated = selectedRecipes.flatMap((recipe) => {
       const factor = personCount / recipe.servings;
       return recipe.ingredients.map((ingredient) => ({
-        id: `${recipe.id}-${ingredient}-${Math.random().toString(36).slice(2, 8)}`,
         name: scaleIngredient(ingredient, factor),
         checked: false,
         recipeTitle: recipe.title,
       }));
     });
 
-    setItems(generated);
+    if (user) {
+      await syncUserItems(generated);
+    } else {
+      setItems(generated.map((item, idx) => withLocalId(item, idx)));
+    }
+
     setUnmatchedMenus(unmatched);
   };
 
-  const checked = items.filter(i => i.checked).length;
+  const addItem = async () => {
+    if (!newItem.trim()) return;
+
+    if (user) {
+      setSyncing(true);
+      try {
+        const data = await addShoppingItem({ name: newItem.trim(), quantity: "" });
+        setItems(data);
+      } finally {
+        setSyncing(false);
+      }
+    } else {
+      setItems((prev) => [
+        ...prev,
+        withLocalId({ name: newItem.trim(), checked: false }, prev.length),
+      ]);
+    }
+
+    setNewItem("");
+  };
+
+  const toggleItem = async (id) => {
+    if (user) {
+      const current = items.find((item) => item.id === id);
+      if (!current) return;
+      setSyncing(true);
+      try {
+        const data = await updateShoppingItem(id, { checked: !current.checked });
+        setItems(data);
+      } finally {
+        setSyncing(false);
+      }
+      return;
+    }
+
+    setItems((prev) => prev.map((item) => item.id === id ? { ...item, checked: !item.checked } : item));
+  };
+
+  const removeItem = async (id) => {
+    if (user) {
+      setSyncing(true);
+      try {
+        const data = await removeShoppingItem(id);
+        setItems(data);
+      } finally {
+        setSyncing(false);
+      }
+      return;
+    }
+
+    setItems((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const clearCheckedItems = async () => {
+    if (checked === 0) return;
+
+    if (user) {
+      const completed = items.filter((item) => item.checked);
+      setSyncing(true);
+      try {
+        for (const item of completed) {
+          await removeShoppingItem(item.id);
+        }
+        const refreshed = await getShoppingList();
+        setItems(refreshed);
+      } finally {
+        setSyncing(false);
+      }
+      return;
+    }
+
+    setItems((prev) => prev.filter((item) => !item.checked));
+  };
 
   return (
     <div style={{ maxWidth: 560, margin: "0 auto" }}>
@@ -153,7 +286,7 @@ export default function ShoppingList() {
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-          {RECIPES.map((recipe) => {
+          {recipes.map((recipe) => {
             const active = selectedRecipeIds.includes(recipe.id);
             return (
               <button
@@ -205,6 +338,7 @@ export default function ShoppingList() {
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button
             onClick={generateFromSelection}
+            disabled={syncing}
             style={{
               background: "linear-gradient(135deg, #ff6b35, #f7931e)",
               color: "white",
@@ -215,6 +349,7 @@ export default function ShoppingList() {
               fontSize: 13,
               cursor: "pointer",
               fontFamily: "inherit",
+              opacity: syncing ? 0.7 : 1,
             }}
           >
             Listeyi Oluştur
@@ -257,7 +392,6 @@ export default function ShoppingList() {
         )}
       </div>
 
-      {/* Progress */}
       <div style={{
         background: "white",
         borderRadius: 20,
@@ -280,7 +414,6 @@ export default function ShoppingList() {
         </div>
       </div>
 
-      {/* Add item */}
       <div style={{
         display: "flex",
         gap: 10,
@@ -302,16 +435,16 @@ export default function ShoppingList() {
             background: "transparent",
           }}
         />
-        <button onClick={addItem} style={{
+        <button onClick={addItem} disabled={syncing} style={{
           background: "linear-gradient(135deg, #ff6b35, #f7931e)",
           color: "white", border: "none",
           borderRadius: 10, padding: "10px 18px",
           fontWeight: 800, fontSize: 13, cursor: "pointer",
           fontFamily: "inherit",
+          opacity: syncing ? 0.7 : 1,
         }}>+ Ekle</button>
       </div>
 
-      {/* List */}
       <div style={{ background: "white", borderRadius: 20, overflow: "hidden", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
         {items.length === 0 ? (
           <div style={{ textAlign: "center", padding: "48px", color: "#ccc" }}>
@@ -334,6 +467,7 @@ export default function ShoppingList() {
             >
               <button
                 onClick={() => toggleItem(item.id)}
+                disabled={syncing}
                 style={{
                   width: 24, height: 24,
                   borderRadius: 8,
@@ -344,6 +478,7 @@ export default function ShoppingList() {
                   color: "white", fontSize: 12, fontWeight: 800,
                   flexShrink: 0,
                   transition: "all .2s",
+                  opacity: syncing ? 0.7 : 1,
                 }}
               >{item.checked ? "✓" : ""}</button>
               <span style={{
@@ -363,11 +498,13 @@ export default function ShoppingList() {
               </span>
               <button
                 onClick={() => removeItem(item.id)}
+                disabled={syncing}
                 style={{
                   background: "none", border: "none",
                   color: "#ddd", cursor: "pointer", fontSize: 16,
                   padding: 4,
                   transition: "color .2s",
+                  opacity: syncing ? 0.7 : 1,
                 }}
                 onMouseEnter={e => e.currentTarget.style.color = "#e53e3e"}
                 onMouseLeave={e => e.currentTarget.style.color = "#ddd"}
@@ -378,7 +515,7 @@ export default function ShoppingList() {
       </div>
 
       {checked > 0 && (
-        <button onClick={clearChecked} style={{
+        <button onClick={clearCheckedItems} disabled={syncing} style={{
           marginTop: 16,
           background: "none",
           border: "2px solid #f0e8de",
@@ -390,6 +527,7 @@ export default function ShoppingList() {
           fontWeight: 700,
           fontSize: 13,
           width: "100%",
+          opacity: syncing ? 0.7 : 1,
         }}>✕ Tamamlananları Temizle ({checked})</button>
       )}
     </div>

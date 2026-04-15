@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createRecipe } from "../services/recipeService";
+import { useAuth } from "../context/AuthContext";
 
 const CATEGORIES = [
   "Tavuk kategorisi",
@@ -18,19 +20,39 @@ const CATEGORIES = [
 
 export default function AddRecipe() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [form, setForm] = useState({
     title: "", category: "Tavuk kategorisi", calories: "", servings: "",
     ingredients: [""], steps: [""],
   });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const update = (field, value) => setForm(f => ({ ...f, [field]: value }));
   const updateList = (field, idx, value) => setForm(f => ({ ...f, [field]: f[field].map((v, i) => i === idx ? value : v) }));
   const addItem = (field) => setForm(f => ({ ...f, [field]: [...f[field], ""] }));
   const removeItem = (field, idx) => setForm(f => ({ ...f, [field]: f[field].filter((_, i) => i !== idx) }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      setError("Tarif eklemek icin lutfen giris yapin.");
+      return;
+    }
+
+    setSubmitting(true);
+    setError("");
+
+    try {
+      await createRecipe(form);
+    } catch (apiError) {
+      setSubmitting(false);
+      setError(apiError.message || "Tarif yayinlanamadi.");
+      return;
+    }
+
+    setSubmitting(false);
     setSubmitted(true);
     setTimeout(() => navigate("/"), 2000);
   };
@@ -49,6 +71,14 @@ export default function AddRecipe() {
         ➕ Tarif Ekle
       </h1>
       <p style={{ color: "#999", marginBottom: 36, fontSize: 14 }}>Yeni bir tarifi topluluğunla paylaş</p>
+
+      {error && (
+        <div style={{
+          background: "#fff0ed", border: "1px solid #ffcdc2",
+          color: "#e53e3e", borderRadius: 12, padding: "10px 14px",
+          fontSize: 13, marginBottom: 16,
+        }}>{error}</div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <Section title="Temel Bilgiler">
@@ -134,7 +164,7 @@ export default function AddRecipe() {
           <button type="button" onClick={() => addItem("steps")} style={addBtn}>+ Adım Ekle</button>
         </Section>
 
-        <button type="submit" style={{
+        <button type="submit" disabled={submitting} style={{
           width: "100%",
           background: "linear-gradient(135deg, #ff6b35, #f7931e)",
           color: "white",
@@ -147,7 +177,8 @@ export default function AddRecipe() {
           fontFamily: "inherit",
           boxShadow: "0 4px 20px rgba(255,107,53,0.3)",
           marginTop: 8,
-        }}>🍳 Tarifi Yayınla</button>
+          opacity: submitting ? 0.7 : 1,
+        }}>{submitting ? "Yayinlaniyor..." : "🍳 Tarifi Yayınla"}</button>
       </form>
     </div>
   );

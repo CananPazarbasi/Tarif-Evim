@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import RecipeCard from "../components/RecipeCard";
-import { RECIPES } from "../services/recipeService";
+import { getPopularRecipes, getRecipes } from "../services/recipeService";
 
 const CATEGORIES = [
   "Tavuk kategorisi",
@@ -76,26 +76,50 @@ const categoryMatchers = {
 export default function Home() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [recipes, setRecipes] = useState([]);
+  const [popularRecipes, setPopularRecipes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "Tümü");
   const [ingredientSearch, setIngredientSearch] = useState("");
   const [ingredientQuery, setIngredientQuery] = useState("");
   const [showIngredientModal, setShowIngredientModal] = useState(false);
-  const [selectedRecipeId, setSelectedRecipeId] = useState(RECIPES[0]?.id || "");
-  const [suggestedRecipe, setSuggestedRecipe] = useState(RECIPES[0] || null);
+  const [selectedRecipeId, setSelectedRecipeId] = useState("");
+  const [suggestedRecipe, setSuggestedRecipe] = useState(null);
 
-  const filtered = RECIPES.filter((r) => {
+  useEffect(() => {
+    const loadRecipes = async () => {
+      setLoading(true);
+      try {
+        const [allRecipes, popular] = await Promise.all([
+          getRecipes({ onlyApproved: true, limit: 100 }),
+          getPopularRecipes(),
+        ]);
+        setRecipes(allRecipes);
+        setPopularRecipes(popular.length > 0 ? popular : allRecipes.slice(0, 3));
+        setSelectedRecipeId(allRecipes[0]?.id || "");
+        setSuggestedRecipe(allRecipes[0] || null);
+      } catch {
+        setRecipes([]);
+        setPopularRecipes([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRecipes();
+  }, []);
+
+  const filtered = useMemo(() => recipes.filter((r) => {
     const matcher = categoryMatchers[activeCategory];
     const catMatch = activeCategory === "Tümü" || !matcher || matcher(r);
     const ingMatch = !ingredientQuery || r.ingredients.some((i) =>
       i.toLowerCase().includes(ingredientQuery.toLowerCase())
     );
     return catMatch && ingMatch;
-  });
-
-  const popularRecipes = RECIPES.slice(0, 3);
+  }), [activeCategory, ingredientQuery, recipes]);
 
   const suggestRecipe = () => {
-    const pool = filtered.length > 0 ? filtered : RECIPES;
+    const pool = filtered.length > 0 ? filtered : recipes;
     const randomRecipe = pool[Math.floor(Math.random() * pool.length)];
     setSuggestedRecipe(randomRecipe || null);
   };
@@ -106,6 +130,10 @@ export default function Home() {
 
   return (
     <div>
+      {loading && (
+        <p style={{ color: "#888", marginBottom: 18, fontWeight: 700 }}>Tarifler yukleniyor...</p>
+      )}
+
       {/* Popular */}
       <section style={{ marginBottom: 28 }}>
         <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, margin: "0 0 14px", color: "#1a1a1a" }}>

@@ -11,9 +11,9 @@ export default function RecipeCard({ recipe }) {
   const fav = isFavorite(recipe.id);
   const [warning, setWarning] = useState("");
 
-  const handleFavoriteClick = (e) => {
+  const handleFavoriteClick = async (e) => {
     e.preventDefault();
-    const result = toggleFavorite(recipe);
+    const result = await toggleFavorite(recipe);
     if (!result?.ok) {
       setWarning(result.message || "Lutfen giris yapin.");
       window.setTimeout(() => setWarning(""), 2200);

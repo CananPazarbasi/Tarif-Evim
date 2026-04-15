@@ -1,9 +1,8 @@
-import axios from "axios";
 import React, { createContext, useContext, useMemo, useState } from "react";
+import { rateRecipe } from "../services/recipeService";
 
 const RatingsContext = createContext(null);
 const RATINGS_KEY = "tarif-evim-ratings";
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 const readStoredRatings = () => {
   try {
@@ -59,18 +58,11 @@ export function RatingsProvider({ children }) {
       return next;
     });
 
-    if (!API_BASE_URL) {
-      return { ok: true, source: "local" };
-    }
-
     try {
-      const response = await axios.post(`${API_BASE_URL}/ratings/upsert`, {
-        recipeId,
-        rating: ratingValue,
-      });
+      const result = await rateRecipe(recipeId, ratingValue);
 
-      const apiAverage = response.data?.average;
-      const apiCount = response.data?.count;
+      const apiAverage = result?.ratingAverage;
+      const apiCount = result?.ratingCount;
       if (typeof apiAverage === "number" && typeof apiCount === "number") {
         setRatings((prev) => {
           const id = String(recipeId);

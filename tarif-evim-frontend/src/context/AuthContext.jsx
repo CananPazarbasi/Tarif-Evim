@@ -1,10 +1,17 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { apiClient, tokenStorage } from "../services/apiClient";
 
 const AuthContext = createContext(null);
 const USER_KEY = "tarif-evim-user";
-const PASS_KEY = "tarif-evim-password";
+
+const normalizeUser = (rawUser) => ({
+  name: rawUser?.name || "Kullanici",
+  email: rawUser?.email || "",
+  role: rawUser?.role || "user",
+});
 
 export function AuthProvider({ children }) {
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(() => {
     try {
       const raw = localStorage.getItem(USER_KEY);
@@ -14,20 +21,71 @@ export function AuthProvider({ children }) {
     }
   });
 
-  const login = (userData) => {
-    const nextUser = {
-      name: userData.name || userData.email?.split("@")[0] || "Kullanıcı",
-      email: userData.email || "",
-      role: userData.role || "user",
-    };
+  const persistUser = (nextUser) => {
     setUser(nextUser);
     localStorage.setItem(USER_KEY, JSON.stringify(nextUser));
-    if (userData.password) {
-      localStorage.setItem(PASS_KEY, userData.password);
+  };
+
+  useEffect(() => {
+    const bootstrap = async () => {
+      const accessToken = tokenStorage.getAccessToken();
+      if (!accessToken) {
+        setUser(null);
+        localStorage.removeItem(USER_KEY);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await apiClient.get("/auth/me", { auth: true });
+        persistUser(normalizeUser(response?.data || {}));
+      } catch {
+        tokenStorage.clear();
+        localStorage.removeItem(USER_KEY);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    bootstrap();
+  }, []);
+
+  const login = async ({ email, password }) => {
+    try {
+      const response = await apiClient.post("/auth/login", { email, password });
+      tokenStorage.setTokens({
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      });
+      persistUser(normalizeUser(response.user));
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, message: error.message || "Giris yapilamadi" };
+    }
+  };
+
+  const register = async ({ name, email, password, role }) => {
+    try {
+      const response = await apiClient.post("/auth/register", {
+        name,
+        email,
+        password,
+        role,
+      });
+      tokenStorage.setTokens({
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      });
+      persistUser(normalizeUser(response.user));
+      return { ok: true };
+    } catch (error) {
+      return { ok: false, message: error.message || "Kayit olunamadi" };
     }
   };
 
   const logout = () => {
+    tokenStorage.clear();
     localStorage.removeItem(USER_KEY);
     setUser(null);
   };
@@ -42,27 +100,33 @@ export function AuthProvider({ children }) {
     return { ok: true };
   };
 
-  const changePassword = ({ currentPassword, newPassword }) => {
-    const savedPassword = localStorage.getItem(PASS_KEY);
-    if (savedPassword && savedPassword !== currentPassword) {
-      return { ok: false, message: "Mevcut şifre doğru değil." };
+  const changePassword = async ({ currentPassword, newPassword }) => {
+    try {
+      await apiClient.put(
+        "/auth/update-password",
+        { currentPassword, newPassword },
+        { auth: true },
+      );
+      return { ok: true, message: "Sifre basariyla guncellendi." };
+    } catch (error) {
+      return { ok: false, message: error.message || "Sifre guncellenemedi" };
     }
-    if (!newPassword || newPassword.length < 6) {
-      return { ok: false, message: "Yeni şifre en az 6 karakter olmalı." };
-    }
-    localStorage.setItem(PASS_KEY, newPassword);
-    return { ok: true, message: "Şifre başarıyla güncellendi." };
   };
 
   const deleteAccount = () => {
     localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(PASS_KEY);
+    tokenStorage.clear();
     setUser(null);
     return { ok: true };
   };
 
+  const value = useMemo(
+    () => ({ user, loading, login, register, logout, updateProfile, changePassword, deleteAccount }),
+    [user, loading],
+  );
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateProfile, changePassword, deleteAccount }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
