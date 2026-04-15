@@ -2,16 +2,21 @@ const mongoose = require("mongoose");
 
 const getNextRecipeNo = async () => {
   const counters = mongoose.connection.collection("counters");
-  const result = await counters.findOneAndUpdate(
-    { name: "recipeNo" },
-    { $inc: { seq: 1 } },
-    {
-      upsert: true,
-      returnDocument: "after",
-    },
-  );
+  const counter = await counters.findOne({ name: "recipeNo" });
 
-  return result.value.seq;
+  if (!counter) {
+    await counters.insertOne({ name: "recipeNo", seq: 1 });
+    return 1;
+  }
+
+  await counters.updateOne({ name: "recipeNo" }, { $inc: { seq: 1 } });
+  const updatedCounter = await counters.findOne({ name: "recipeNo" });
+
+  if (!updatedCounter || typeof updatedCounter.seq !== "number") {
+    throw new Error("recipeNo üretilemedi");
+  }
+
+  return updatedCounter.seq;
 };
 
 const RecipeSchema = new mongoose.Schema(
