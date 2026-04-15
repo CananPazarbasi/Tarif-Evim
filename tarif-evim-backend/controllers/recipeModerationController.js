@@ -130,7 +130,9 @@ exports.chatAboutRecipe = async (req, res, next) => {
 
       if (lowerMessage.includes("malzeme")) {
         answer = `Malzemeler: ${recipe.ingredients
-          .map((item) => `${item.name}${item.amount ? ` (${item.amount})` : ""}`)
+          .map(
+            (item) => `${item.name}${item.amount ? ` (${item.amount})` : ""}`,
+          )
           .join(", ")}`;
       } else if (
         lowerMessage.includes("nasıl") ||
