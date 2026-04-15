@@ -1,5 +1,6 @@
 const Recipe = require("../models/Recipe");
 const { calculateRating, getRecipeQueryByRef } = require("./recipeShared");
+const { generateRecipeAnswer } = require("../utils/recipeAi");
 
 exports.rateRecipe = async (req, res, next) => {
   try {
@@ -122,24 +123,28 @@ exports.chatAboutRecipe = async (req, res, next) => {
 
     const lowerMessage = String(message).toLowerCase();
 
-    let answer = "Bu tarifle ilgili başka bir şey sorabilirsin.";
+    let answer = await generateRecipeAnswer({ recipe, message });
 
-    if (lowerMessage.includes("malzeme")) {
-      answer = `Malzemeler: ${recipe.ingredients
-        .map((item) => `${item.name}${item.amount ? ` (${item.amount})` : ""}`)
-        .join(", ")}`;
-    } else if (
-      lowerMessage.includes("nasıl") ||
-      lowerMessage.includes("adım")
-    ) {
-      answer = `Yapılışı: ${recipe.steps.map((step, index) => `${index + 1}. ${step}`).join(" ")}`;
-    } else if (
-      lowerMessage.includes("kaç kişilik") ||
-      lowerMessage.includes("kişi")
-    ) {
-      answer = `Bu tarif yaklaşık ${recipe.servings} kişiliktir.`;
-    } else if (lowerMessage.includes("kalori")) {
-      answer = `Bu tarifin tahmini kalorisi ${recipe.calories} kcal.`;
+    if (!answer) {
+      answer = "Bu tarifle ilgili başka bir şey sorabilirsin.";
+
+      if (lowerMessage.includes("malzeme")) {
+        answer = `Malzemeler: ${recipe.ingredients
+          .map((item) => `${item.name}${item.amount ? ` (${item.amount})` : ""}`)
+          .join(", ")}`;
+      } else if (
+        lowerMessage.includes("nasıl") ||
+        lowerMessage.includes("adım")
+      ) {
+        answer = `Yapılışı: ${recipe.steps.map((step, index) => `${index + 1}. ${step}`).join(" ")}`;
+      } else if (
+        lowerMessage.includes("kaç kişilik") ||
+        lowerMessage.includes("kişi")
+      ) {
+        answer = `Bu tarif yaklaşık ${recipe.servings} kişiliktir.`;
+      } else if (lowerMessage.includes("kalori")) {
+        answer = `Bu tarifin tahmini kalorisi ${recipe.calories} kcal.`;
+      }
     }
 
     res.status(200).json({
