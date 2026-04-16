@@ -65,7 +65,7 @@ export default function ShoppingList() {
   useEffect(() => {
     const loadRecipes = async () => {
       try {
-        const loaded = await getRecipes({ onlyApproved: true, limit: 100 });
+        const loaded = await getRecipes({ limit: 100 });
         setRecipes(loaded);
         const initialRecipes = (searchParams.get("recipes") || "")
           .split(",")

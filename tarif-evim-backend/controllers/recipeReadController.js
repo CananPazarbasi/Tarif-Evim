@@ -64,7 +64,7 @@ exports.getRecipes = async (req, res, next) => {
 
 exports.getPopularRecipes = async (req, res, next) => {
   try {
-    const recipes = await Recipe.find({ isApproved: true })
+    const recipes = await Recipe.find({})
       .sort({ ratingAverage: -1, ratingCount: -1, createdAt: -1 })
       .limit(10)
       .populate(recipeBasePopulate);
@@ -82,7 +82,6 @@ exports.getPopularRecipes = async (req, res, next) => {
 exports.getCategories = async (req, res, next) => {
   try {
     const categories = await Recipe.aggregate([
-      { $match: { isApproved: true } },
       { $group: { _id: "$category", count: { $sum: 1 } } },
       { $project: { _id: 0, category: "$_id", count: 1 } },
       { $sort: { count: -1 } },
@@ -96,7 +95,7 @@ exports.getCategories = async (req, res, next) => {
 
 exports.findByIngredients = async (req, res, next) => {
   try {
-    const { ingredients = [], onlyApproved = true } = req.body;
+    const { ingredients = [], onlyApproved = false } = req.body;
 
     if (!Array.isArray(ingredients) || ingredients.length === 0) {
       return res.status(400).json({

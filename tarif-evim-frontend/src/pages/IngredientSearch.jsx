@@ -63,7 +63,7 @@ export default function IngredientSearch() {
     const loadRecipes = async () => {
       setLoading(true);
       try {
-        const allRecipes = await getRecipes({ onlyApproved: true, limit: 100 });
+        const allRecipes = await getRecipes({ limit: 100 });
         setRecipes(allRecipes);
       } catch {
         setRecipes([]);

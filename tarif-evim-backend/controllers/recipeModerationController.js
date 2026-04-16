@@ -78,14 +78,31 @@ exports.approveRecipe = async (req, res, next) => {
         .json({ success: false, message: "Tarif bulunamadı" });
     }
 
-    recipe.isApproved = true;
-    recipe.approvedBy = req.user.id;
-    recipe.approvedAt = new Date();
+    if (!recipe.isApproved) {
+      recipe.isApproved = true;
+      recipe.approvedBy = req.user.id;
+      recipe.approvedAt = new Date();
+    } else {
+      const approvedById = recipe.approvedBy ? recipe.approvedBy.toString() : "";
+      if (approvedById && approvedById !== req.user.id) {
+        return res.status(403).json({
+          success: false,
+          message: "Bu onayı sadece onayı veren diyetisyen geri çekebilir",
+        });
+      }
+
+      recipe.isApproved = false;
+      recipe.approvedBy = null;
+      recipe.approvedAt = null;
+    }
+
     await recipe.save();
 
     res.status(200).json({
       success: true,
-      message: "Tarif onaylandı",
+      message: recipe.isApproved
+        ? "Tarif onaylandı"
+        : "Diyetisyen onayı geri çekildi",
       data: recipe,
     });
   } catch (error) {

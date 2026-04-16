@@ -3,72 +3,26 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import RecipeCard from "../components/RecipeCard";
 import { getPopularRecipes, getRecipes } from "../services/recipeService";
 import { CATEGORY_OPTIONS } from "../constants/categories";
-import { useAuth } from "../context/AuthContext";
-
-const includesAny = (textList, terms) => {
-  const combined = textList.join(" ").toLowerCase();
-  return terms.some((term) => combined.includes(term));
-};
-
-const categoryMatchers = {
-  "Tavuk kategorisi": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["tavuk"]),
-  "Et kategorisi": (recipe) =>
-    includesAny([recipe.title, ...recipe.ingredients], ["et", "dana", "kuzu", "kiyma", "kofte"]) &&
-    !includesAny([recipe.title, ...recipe.ingredients], ["tavuk"]),
-  "Sebze kategorisi": (recipe) =>
-    includesAny([recipe.title, ...recipe.ingredients], [
-      "sebze",
-      "salata",
-      "mercimek",
-      "domates",
-      "salatalik",
-      "havuc",
-      "brokoli",
-      "ispanak",
-    ]),
-  "Baklagiller": (recipe) =>
-    includesAny([recipe.title, ...recipe.ingredients], [
-      "baklagil",
-      "mercimek",
-      "nohut",
-      "fasulye",
-      "barbunya",
-      "borulce",
-      "bezelye",
-    ]),
-  "Deniz mahsülleri": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["balik", "somon", "hamsi", "levrek", "ton", "karides", "midye", "kalamar"]),
-  "Corba": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["corba", "çorba"]),
-  "Hamur işleri": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["hamur", "pogaca", "poğaça", "borek", "börek", "ekmek", "manti", "mantı", "un"]),
-  "Makarna": (recipe) => includesAny([recipe.title, ...recipe.ingredients], ["makarna", "spagetti", "penne"]),
-  "Glutensiz kategori": (recipe) => recipe.category === "Glutensiz kategori",
-  "Vegan kategorisi": (recipe) => recipe.category === "Vegan kategorisi",
-  "Atıştırmalık ve Tatlı": (recipe) =>
-    recipe.category === "Atıştırmalık ve Tatlı" ||
-    includesAny([recipe.title, ...recipe.ingredients], ["atistirmalik", "atıştırmalık", "bar", "kurabiye", "tatli", "tatlı"]),
-  "Diyetisyen onaylı tarifler": (recipe) => recipe.dietitianApproved,
-};
 
 export default function Home() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [recipes, setRecipes] = useState([]);
   const [popularRecipes, setPopularRecipes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState(searchParams.get("category") || "Tümü");
   const [ingredientSearch, setIngredientSearch] = useState("");
   const [ingredientQuery, setIngredientQuery] = useState("");
   const [showIngredientModal, setShowIngredientModal] = useState(false);
   const [selectedRecipeId, setSelectedRecipeId] = useState("");
   const [suggestedRecipe, setSuggestedRecipe] = useState(null);
+  const activeCategory = searchParams.get("category") || "Tümü";
 
   useEffect(() => {
     const loadRecipes = async () => {
       setLoading(true);
       try {
-        const isDietitian = user?.role === "dietitian";
         const [allRecipes, popular] = await Promise.all([
-          getRecipes({ onlyApproved: isDietitian ? undefined : true, limit: 100 }),
+          getRecipes({ limit: 100 }),
           getPopularRecipes(),
         ]);
         setRecipes(allRecipes);
@@ -84,15 +38,24 @@ export default function Home() {
     };
 
     loadRecipes();
-  }, [user?.role]);
+  }, []);
 
-  useEffect(() => {
-    setActiveCategory(searchParams.get("category") || "Tümü");
-  }, [searchParams]);
+  const handleCategoryChange = (category) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (category === "Tümü") {
+      nextParams.delete("category");
+    } else {
+      nextParams.set("category", category);
+    }
+    setSearchParams(nextParams);
+  };
 
   const filtered = useMemo(() => recipes.filter((r) => {
-    const matcher = categoryMatchers[activeCategory];
-    const categoryMatch = activeCategory === "Tümü" || !matcher || matcher(r);
+    const categoryMatch =
+      activeCategory === "Tümü"
+      || (activeCategory === "Diyetisyen onaylı tarifler"
+        ? r.dietitianApproved
+        : r.category === activeCategory);
 
     const ingredientMatch = !ingredientQuery || r.ingredients.some((i) =>
       i.toLowerCase().includes(ingredientQuery.toLowerCase())
@@ -262,7 +225,7 @@ export default function Home() {
       {/* Category Filter */}
       <div style={{ display: "flex", gap: 10, marginBottom: 32, flexWrap: "wrap" }}>
         <button
-          onClick={() => setActiveCategory("Tümü")}
+          onClick={() => handleCategoryChange("Tümü")}
           style={{
             padding: "10px 20px",
             borderRadius: 50,
@@ -282,7 +245,7 @@ export default function Home() {
         {CATEGORY_OPTIONS.map((cat) => (
           <button
             key={cat.value}
-            onClick={() => setActiveCategory(cat.value)}
+            onClick={() => handleCategoryChange(cat.value)}
             style={{
               padding: "10px 20px",
               borderRadius: 50,
@@ -376,7 +339,7 @@ export default function Home() {
                 onClick={() => {
                   setIngredientQuery(ingredientSearch);
                   setShowIngredientModal(false);
-                  setActiveCategory("Tümü");
+                  handleCategoryChange("Tümü");
                 }}
                 style={{
                   background: "linear-gradient(135deg, #ff6b35, #f7931e)",

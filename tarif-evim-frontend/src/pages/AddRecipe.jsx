@@ -46,8 +46,8 @@ export default function AddRecipe() {
   if (submitted) return (
     <div style={{ textAlign: "center", padding: "100px 0" }}>
       <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#1a1a1a" }}>Tarif Gönderildi!</h2>
-      <p style={{ color: "#999" }}>Tarifin diyetisyen onayından sonra yayınlanacak.</p>
+      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#1a1a1a" }}>Tarif Yayınlandı!</h2>
+      <p style={{ color: "#999" }}>Tarif yayınlandı.</p>
     </div>
   );
 

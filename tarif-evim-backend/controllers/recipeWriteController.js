@@ -92,9 +92,8 @@ exports.deleteRecipe = async (req, res, next) => {
     }
 
     const isOwner = recipe.createdBy.toString() === req.user.id;
-    const isDietitian = req.user.role === "dietitian";
 
-    if (!isOwner && !isDietitian) {
+    if (!isOwner) {
       return res.status(403).json({
         success: false,
         message: "Yetkiniz yok",

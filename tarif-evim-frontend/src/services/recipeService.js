@@ -34,6 +34,10 @@ const normalizeRecipe = (recipe) => ({
     recipe?.createdBy && typeof recipe.createdBy === "object"
       ? String(recipe.createdBy._id || "")
       : String(recipe.createdBy || ""),
+  approvedById:
+    recipe?.approvedBy && typeof recipe.approvedBy === "object"
+      ? String(recipe.approvedBy._id || "")
+      : String(recipe.approvedBy || ""),
 });
 
 const toCreatePayload = (recipeInput) => ({
@@ -94,7 +98,7 @@ export const getRecipeById = async (id) => {
 export const searchRecipes = async (query) => {
   const term = String(query || "").trim();
   if (!term) return [];
-  return getRecipes({ q: term, onlyApproved: true, limit: 20 });
+  return getRecipes({ q: term, limit: 20 });
 };
 
 export const createRecipe = async (recipeInput) => {
@@ -114,7 +118,10 @@ export const chatAboutRecipe = async (recipeId, message) => {
 
 export const approveRecipe = async (recipeId) => {
   const response = await apiClient.post(`/recipes/${recipeId}/approve`, {}, { auth: true });
-  return normalizeRecipe(response?.data || {});
+  return {
+    recipe: normalizeRecipe(response?.data || {}),
+    message: response?.message || "",
+  };
 };
 
 export const deleteRecipe = async (recipeId) => {

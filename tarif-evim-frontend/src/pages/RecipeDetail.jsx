@@ -60,8 +60,11 @@ export default function RecipeDetail() {
 
   const fav = isFavorite(recipe.id);
   const isDietitian = user?.role === "dietitian";
-  const canApprove = Boolean(isDietitian && !recipe.dietitianApproved);
-  const canDelete = Boolean(user && (isDietitian || recipe.createdById === user.id));
+  const canApprove = Boolean(
+    isDietitian
+    && (!recipe.dietitianApproved || recipe.approvedById === user?.id),
+  );
+  const canDelete = Boolean(user && recipe.createdById === user.id);
 
   const handleToggleFavorite = async () => {
     const result = await toggleFavorite(recipe);
@@ -95,9 +98,9 @@ export default function RecipeDetail() {
     setActionLoading(true);
     setActionMessage("");
     try {
-      const approvedRecipe = await approveRecipe(recipe.id);
-      setRecipe(approvedRecipe);
-      setActionMessage("Tarif diyetisyen onayına alındı.");
+      const { recipe: updatedRecipe, message } = await approveRecipe(recipe.id);
+      setRecipe(updatedRecipe);
+      setActionMessage(message || "Tarif güncellendi.");
     } catch (error) {
       setActionMessage(error.message || "Tarif onaylanamadı.");
     } finally {
@@ -222,7 +225,7 @@ export default function RecipeDetail() {
                     cursor: actionLoading ? "default" : "pointer",
                     opacity: actionLoading ? 0.7 : 1,
                   }}
-                >Onayla</button>
+                >{recipe.dietitianApproved ? "Onayı Geri Çek" : "Onayla"}</button>
               )}
               {canDelete && (
                 <button
