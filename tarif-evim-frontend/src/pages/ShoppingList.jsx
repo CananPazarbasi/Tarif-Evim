@@ -55,6 +55,7 @@ export default function ShoppingList() {
   const [searchParams] = useSearchParams();
   const [recipes, setRecipes] = useState([]);
   const [selectedRecipeIds, setSelectedRecipeIds] = useState([]);
+  const [recipeSearch, setRecipeSearch] = useState("");
   const [personCount, setPersonCount] = useState(Math.max(1, Number(searchParams.get("persons")) || 2));
   const [manualMenuInput, setManualMenuInput] = useState("");
   const [unmatchedMenus, setUnmatchedMenus] = useState([]);
@@ -96,6 +97,11 @@ export default function ShoppingList() {
   }, [user]);
 
   const checked = useMemo(() => items.filter((i) => i.checked).length, [items]);
+  const filteredRecipes = useMemo(() => {
+    const term = normalizeText(recipeSearch);
+    if (!term) return recipes;
+    return recipes.filter((recipe) => normalizeText(recipe.title).includes(term));
+  }, [recipes, recipeSearch]);
 
   const toggleRecipe = (id) => {
     setSelectedRecipeIds((prev) => (
@@ -285,28 +291,91 @@ export default function ShoppingList() {
           />
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
-          {recipes.map((recipe) => {
-            const active = selectedRecipeIds.includes(recipe.id);
-            return (
-              <button
-                key={recipe.id}
-                onClick={() => toggleRecipe(recipe.id)}
-                style={{
-                  border: active ? "none" : "2px solid #f0e8de",
-                  background: active ? "linear-gradient(135deg, #ff6b35, #f7931e)" : "white",
-                  color: active ? "white" : "#555",
-                  borderRadius: 999,
-                  padding: "8px 14px",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                {recipe.title}
-              </button>
-            );
-          })}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ display: "block", fontSize: 13, color: "#666", fontWeight: 700, marginBottom: 6 }}>
+            Menü Ara ve Seç (Çoklu)
+          </label>
+          <input
+            value={recipeSearch}
+            onChange={(e) => setRecipeSearch(e.target.value)}
+            placeholder="Tarif adina gore ara..."
+            style={{
+              width: "100%",
+              border: "2px solid #f0e8de",
+              borderRadius: 12,
+              padding: "10px 12px",
+              fontSize: 13,
+              fontFamily: "inherit",
+              color: "#333",
+              boxSizing: "border-box",
+              marginBottom: 8,
+            }}
+          />
+
+          <div style={{
+            border: "2px solid #f0e8de",
+            borderRadius: 12,
+            maxHeight: 180,
+            overflowY: "auto",
+            background: "#fff",
+          }}>
+            {filteredRecipes.length === 0 && (
+              <div style={{ padding: "10px 12px", color: "#9ca3af", fontSize: 12 }}>
+                Eşleşen tarif bulunamadı.
+              </div>
+            )}
+            {filteredRecipes.map((recipe) => {
+              const active = selectedRecipeIds.includes(recipe.id);
+              return (
+                <label
+                  key={recipe.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "9px 12px",
+                    fontSize: 13,
+                    cursor: "pointer",
+                    background: active ? "#fff7ed" : "white",
+                    borderBottom: "1px solid #f8f1e9",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={active}
+                    onChange={() => toggleRecipe(recipe.id)}
+                  />
+                  <span style={{ color: active ? "#c2410c" : "#374151", fontWeight: active ? 700 : 600 }}>
+                    {recipe.title}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
+            {recipes
+              .filter((recipe) => selectedRecipeIds.includes(recipe.id))
+              .map((recipe) => (
+                <button
+                  key={recipe.id}
+                  type="button"
+                  onClick={() => toggleRecipe(recipe.id)}
+                  style={{
+                    border: "none",
+                    background: "linear-gradient(135deg, #ff6b35, #f7931e)",
+                    color: "white",
+                    borderRadius: 999,
+                    padding: "6px 10px",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  {recipe.title} ×
+                </button>
+              ))}
+          </div>
         </div>
 
         <div style={{ marginBottom: 16 }}>
