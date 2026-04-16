@@ -24,7 +24,12 @@ export function FavoritesProvider({ children }) {
           image: recipe.image,
           calories: recipe.calories,
           servings: recipe.servings,
-          category: recipe.category,
+          categories: Array.isArray(recipe.category)
+            ? recipe.category
+            : [recipe.category].filter(Boolean),
+          category: Array.isArray(recipe.category)
+            ? recipe.category[0] || "Sebze kategorisi"
+            : recipe.category,
           dietitianApproved: Boolean(recipe.isApproved),
           ingredients: (recipe.ingredients || []).map((item) =>
             `${String(item.amount || "").trim()} ${String(item.name || "").trim()}`.trim(),

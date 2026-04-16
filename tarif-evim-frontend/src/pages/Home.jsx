@@ -26,7 +26,7 @@ export default function Home() {
           getPopularRecipes(),
         ]);
         setRecipes(allRecipes);
-        setPopularRecipes(popular.length > 0 ? popular : allRecipes.slice(0, 3));
+        setPopularRecipes(popular.length > 0 ? popular : allRecipes.slice(0, 4));
         setSelectedRecipeId(allRecipes[0]?.id || "");
         setSuggestedRecipe(allRecipes[0] || null);
       } catch {
@@ -51,11 +51,15 @@ export default function Home() {
   };
 
   const filtered = useMemo(() => recipes.filter((r) => {
+    const categories = Array.isArray(r.categories) && r.categories.length > 0
+      ? r.categories
+      : [r.category].filter(Boolean);
+
     const categoryMatch =
       activeCategory === "Tümü"
       || (activeCategory === "Diyetisyen onaylı tarifler"
         ? r.dietitianApproved
-        : r.category === activeCategory);
+        : categories.includes(activeCategory));
 
     const ingredientMatch = !ingredientQuery || r.ingredients.some((i) =>
       i.toLowerCase().includes(ingredientQuery.toLowerCase())
@@ -86,7 +90,7 @@ export default function Home() {
           Popüler
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
-          {popularRecipes.map((recipe) => (
+          {popularRecipes.slice(0, 4).map((recipe) => (
             <Link
               key={recipe.id}
               to={`/recipe/${recipe.id}`}

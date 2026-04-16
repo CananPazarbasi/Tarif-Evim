@@ -75,6 +75,10 @@ export const apiRequest = async (
     body: typeof data !== "undefined" ? JSON.stringify(data) : undefined,
   });
 
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[API] ${method} ${buildUrl(path)} -> ${response.status}`);
+  }
+
   if (response.status === 401 && auth && retry) {
     const nextToken = await refreshAccessToken();
     if (nextToken) {
@@ -89,6 +93,9 @@ export const apiRequest = async (
     const error = new Error(body?.message || "Istek basarisiz");
     error.status = response.status;
     error.body = body;
+    if (process.env.NODE_ENV === "development") {
+      console.error(`[API Error] ${method} ${buildUrl(path)} -> ${response.status}`, body);
+    }
     throw error;
   }
 

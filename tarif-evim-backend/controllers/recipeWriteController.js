@@ -1,10 +1,23 @@
 const Recipe = require("../models/Recipe");
 const { getRecipeQueryByRef } = require("./recipeShared");
 
+const normalizeCategories = (rawCategory) => {
+  const values = Array.isArray(rawCategory) ? rawCategory : [rawCategory];
+  const cleaned = values
+    .map((item) => String(item || "").trim())
+    .filter(Boolean);
+  return cleaned.length > 0 ? [...new Set(cleaned)] : ["Sebze kategorisi"];
+};
+
 exports.createRecipe = async (req, res, next) => {
   try {
-    const recipe = await Recipe.create({
+    const nextPayload = {
       ...req.body,
+      category: normalizeCategories(req.body.category),
+    };
+
+    const recipe = await Recipe.create({
+      ...nextPayload,
       createdBy: req.user.id,
       isApproved: false,
       approvedBy: null,
@@ -50,6 +63,10 @@ exports.updateRecipe = async (req, res, next) => {
     }
 
     const updateData = { ...req.body };
+
+    if (Object.prototype.hasOwnProperty.call(updateData, "category")) {
+      updateData.category = normalizeCategories(updateData.category);
+    }
 
     if (Object.prototype.hasOwnProperty.call(updateData, "isApproved")) {
       delete updateData.isApproved;

@@ -3,14 +3,17 @@ import { Star } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getRaterKey, useRatings } from "../context/RatingsContext";
 
-export default function StarRating({ recipeId, compact = false, className = "" }) {
+export default function StarRating({ recipeId, compact = false, className = "", initialAverage = 0, initialCount = 0 }) {
   const { user } = useAuth();
   const { setRating, getRatingStats, syncError } = useRatings();
   const [hovered, setHovered] = useState(0);
   const [toast, setToast] = useState("");
 
   const raterKey = getRaterKey(user);
-  const { average, count, myRating } = getRatingStats(recipeId, raterKey);
+  const { average, count, myRating } = getRatingStats(recipeId, raterKey, {
+    average: initialAverage,
+    count: initialCount,
+  });
 
   const activeStars = hovered || myRating;
   const summary = useMemo(() => `${average.toFixed(1)}/5`, [average]);

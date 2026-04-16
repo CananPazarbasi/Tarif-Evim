@@ -6,6 +6,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import RecipeDetail from "./pages/RecipeDetail";
 import AddRecipe from "./pages/AddRecipe";
+import EditRecipe from "./pages/EditRecipe";
+import CategoryRecipes from "./pages/CategoryRecipes";
 import ShoppingList from "./pages/ShoppingList";
 import Favorites from "./pages/Favorites";
 import IngredientSearch from "./pages/IngredientSearch";
@@ -25,6 +27,8 @@ export default function App() {
               <Route path="/" element={<Layout />}>
                 <Route index element={<Home />} />
                 <Route path="recipe/:id" element={<RecipeDetail />} />
+                <Route path="recipe/:id/edit" element={<EditRecipe />} />
+                <Route path="category/:categoryValue" element={<CategoryRecipes />} />
                 <Route path="add-recipe" element={<AddRecipe />} />
                 <Route path="ingredient-search" element={<IngredientSearch />} />
                 <Route path="shopping-list" element={<ShoppingList />} />

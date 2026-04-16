@@ -65,6 +65,7 @@ export default function RecipeDetail() {
     && (!recipe.dietitianApproved || recipe.approvedById === user?.id),
   );
   const canDelete = Boolean(user && recipe.createdById === user.id);
+  const canEdit = Boolean(user && recipe.createdById === user.id);
 
   const handleToggleFavorite = async () => {
     const result = await toggleFavorite(recipe);
@@ -182,11 +183,15 @@ export default function RecipeDetail() {
           <div style={{ display: "flex", gap: 16, marginBottom: 28 }}>
             <StatBox icon="🔥" value={recipe.calories} label="kcal" />
             <StatBox icon="🍽️" value={recipe.servings} label="kişilik" />
-            <StatBox icon="⏱️" value={recipe.steps.length * 5} label="dakika" />
+            <StatBox icon="⏱️" value={recipe.preparationTime || recipe.steps.length * 5} label="dakika" />
           </div>
 
           <div style={{ marginBottom: 18 }}>
-            <StarRating recipeId={recipe.id} />
+            <StarRating
+              recipeId={recipe.id}
+              initialAverage={Number(recipe.ratingAverage || 0)}
+              initialCount={Number(recipe.ratingCount || 0)}
+            />
           </div>
 
           <button
@@ -208,7 +213,7 @@ export default function RecipeDetail() {
             }}
           >{fav ? "♥ Favorilerden Çıkar" : "♡ Favorilere Ekle"}</button>
 
-          {(canApprove || canDelete) && (
+          {(canApprove || canDelete || canEdit) && (
             <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
               {canApprove && (
                 <button
@@ -226,6 +231,21 @@ export default function RecipeDetail() {
                     opacity: actionLoading ? 0.7 : 1,
                   }}
                 >{recipe.dietitianApproved ? "Onayı Geri Çek" : "Onayla"}</button>
+              )}
+              {canEdit && (
+                <Link
+                  to={`/recipe/${recipe.id}/edit`}
+                  style={{
+                    background: "#eef2ff",
+                    border: "1px solid #c7d2fe",
+                    color: "#3730a3",
+                    borderRadius: 50,
+                    padding: "10px 16px",
+                    fontWeight: 800,
+                    fontSize: 13,
+                    textDecoration: "none",
+                  }}
+                >Tarifi Duzenle</Link>
               )}
               {canDelete && (
                 <button

@@ -9,6 +9,10 @@ const createClient = () => {
 };
 
 const buildRecipeContext = (recipe) => {
+  const categories = Array.isArray(recipe.category)
+    ? recipe.category.filter(Boolean).join(", ")
+    : String(recipe.category || "").trim();
+
   const ingredients = recipe.ingredients
     .map((item) => `${item.name}${item.amount ? ` (${item.amount})` : ""}`)
     .join(", ");
@@ -20,7 +24,7 @@ const buildRecipeContext = (recipe) => {
   return [
     `Tarif adı: ${recipe.title}`,
     `Açıklama: ${recipe.description || "Yok"}`,
-    `Kategori: ${recipe.category}`,
+    `Kategori: ${categories || "Yok"}`,
     `Kaç kişilik: ${recipe.servings}`,
     `Kalori: ${recipe.calories}`,
     `Hazırlık süresi: ${recipe.preparationTime} dakika`,

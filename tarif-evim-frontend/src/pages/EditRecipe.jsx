@@ -1,19 +1,20 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { createRecipe } from "../services/recipeService";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { getRecipeById, updateRecipe } from "../services/recipeService";
 import { useAuth } from "../context/AuthContext";
 import { CATEGORY_OPTIONS } from "../constants/categories";
 
-export default function AddRecipe() {
+export default function EditRecipe() {
+  const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     title: "", categoryValues: ["Tavuk kategorisi"], calories: "", servings: "", preparationTime: "", image: "",
     ingredients: [""], steps: [""],
   });
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
 
   const fileToDataUrl = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -22,7 +23,51 @@ export default function AddRecipe() {
     reader.readAsDataURL(file);
   });
 
-  const update = (field, value) => setForm(f => ({ ...f, [field]: value }));
+  useEffect(() => {
+    const loadRecipe = async () => {
+      if (!user) {
+        setError("Tarif duzenlemek icin lutfen giris yapin.");
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const recipe = await getRecipeById(id);
+
+        if (!recipe) {
+          setError("Tarif bulunamadi.");
+          setLoading(false);
+          return;
+        }
+
+        if (recipe.createdById !== user.id) {
+          setError("Sadece kendi tarifinizi duzenleyebilirsiniz.");
+          setLoading(false);
+          return;
+        }
+
+        setForm({
+          title: recipe.title || "",
+          categoryValues: recipe.categoryValues?.length ? recipe.categoryValues : [recipe.categoryValue || recipe.category || "Tavuk kategorisi"],
+          calories: String(recipe.calories || ""),
+          servings: String(recipe.servings || ""),
+          preparationTime: String(recipe.preparationTime || ""),
+          image: recipe.image || "",
+          ingredients: recipe.ingredients?.length ? recipe.ingredients : [""],
+          steps: recipe.steps?.length ? recipe.steps : [""],
+        });
+      } catch {
+        setError("Tarif bilgileri yuklenemedi.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRecipe();
+  }, [id, user]);
+
+  const update = (field, value) => setForm((f) => ({ ...f, [field]: value }));
   const toggleCategory = (categoryValue) => {
     setForm((prev) => {
       const exists = prev.categoryValues.includes(categoryValue);
@@ -33,9 +78,9 @@ export default function AddRecipe() {
       return { ...prev, categoryValues: [...prev.categoryValues, categoryValue] };
     });
   };
-  const updateList = (field, idx, value) => setForm(f => ({ ...f, [field]: f[field].map((v, i) => i === idx ? value : v) }));
-  const addItem = (field) => setForm(f => ({ ...f, [field]: [...f[field], ""] }));
-  const removeItem = (field, idx) => setForm(f => ({ ...f, [field]: f[field].filter((_, i) => i !== idx) }));
+  const updateList = (field, idx, value) => setForm((f) => ({ ...f, [field]: f[field].map((v, i) => (i === idx ? value : v)) }));
+  const addItem = (field) => setForm((f) => ({ ...f, [field]: [...f[field], ""] }));
+  const removeItem = (field, idx) => setForm((f) => ({ ...f, [field]: f[field].filter((_, i) => i !== idx) }));
 
   const handleImagePick = async (e) => {
     const file = e.target.files?.[0];
@@ -62,7 +107,7 @@ export default function AddRecipe() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
-      setError("Tarif eklemek icin lutfen giris yapin.");
+      setError("Tarif duzenlemek icin lutfen giris yapin.");
       return;
     }
 
@@ -75,32 +120,39 @@ export default function AddRecipe() {
     setError("");
 
     try {
-      await createRecipe(form);
+      console.log("Tarif güncellemesi başlıyor, recipeId:", id, "Form:", form);
+      await updateRecipe(id, form);
+      console.log("Tarif başarıyla güncellendi");
+      navigate(`/recipe/${id}`);
     } catch (apiError) {
+      console.error("Güncelleme hatası:", apiError);
       setSubmitting(false);
-      setError(apiError.message || "Tarif yayinlanamadi.");
+      setError(apiError.message || "Tarif guncellenemedi.");
       return;
     }
 
     setSubmitting(false);
-    setSubmitted(true);
-    setTimeout(() => navigate("/"), 2000);
   };
 
-  if (submitted) return (
-    <div style={{ textAlign: "center", padding: "100px 0" }}>
-      <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#1a1a1a" }}>Tarif Yayınlandı!</h2>
-      <p style={{ color: "#999" }}>Tarif yayınlandı.</p>
-    </div>
-  );
+  if (loading) {
+    return <div style={{ textAlign: "center", padding: "100px 0", color: "#999", fontWeight: 700 }}>Tarif yukleniyor...</div>;
+  }
+
+  if (error && !submitting && !form.title) {
+    return (
+      <div style={{ maxWidth: 700, margin: "0 auto", paddingTop: 24 }}>
+        <p style={{ color: "#b91c1c", fontWeight: 700, marginBottom: 12 }}>{error}</p>
+        <Link to="/" style={{ color: "#ff6b35", fontWeight: 800, textDecoration: "none" }}>← Ana Sayfaya Don</Link>
+      </div>
+    );
+  }
 
   return (
     <div style={{ maxWidth: 700, margin: "0 auto" }}>
       <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 900, color: "#1a1a1a", marginBottom: 8 }}>
-        ➕ Tarif Ekle
+        ✏️ Tarifi Duzenle
       </h1>
-      <p style={{ color: "#999", marginBottom: 36, fontSize: 14 }}>Yeni bir tarifi topluluğunla paylaş</p>
+      <p style={{ color: "#999", marginBottom: 36, fontSize: 14 }}>Sadece size ait tarif bilgilerini guncelleyebilirsiniz</p>
 
       {error && (
         <div style={{
@@ -113,28 +165,12 @@ export default function AddRecipe() {
       <form onSubmit={handleSubmit}>
         <Section title="Temel Bilgiler">
           <FieldRow>
-            <Field label="Tarif Adı" required>
-              <input value={form.title} onChange={e => update("title", e.target.value)}
-                placeholder="örn: Mercimek Çorbası" style={inputStyle} required
-                onFocus={e => e.target.style.borderColor = "#ff6b35"}
-                onBlur={e => e.target.style.borderColor = "#f0e8de"} />
+            <Field label="Tarif Adi" required>
+              <input value={form.title} onChange={(e) => update("title", e.target.value)}
+                placeholder="orn: Mercimek Corbasi" style={inputStyle} required
+                onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
+                onBlur={(e) => { e.target.style.borderColor = "#f0e8de"; }} />
             </Field>
-
-          <FieldRow>
-            <Field label="Tarif Gorseli">
-              <div style={{ display: "grid", gap: 10 }}>
-                <input type="file" accept="image/*" onChange={handleImagePick} style={{ ...inputStyle, padding: "8px 10px", background: "white" }} />
-                {form.image && (
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <img src={form.image} alt="Tarif onizleme" style={{ width: 90, height: 90, objectFit: "cover", borderRadius: 12, border: "1px solid #f0e8de" }} />
-                    <button type="button" onClick={() => update("image", "")} style={{ ...addBtn, marginTop: 0 }}>
-                      Gorseli Kaldir
-                    </button>
-                  </div>
-                )}
-              </div>
-            </Field>
-          </FieldRow>
           </FieldRow>
           <FieldRow cols={3}>
             <Field label="Kategori">
@@ -156,30 +192,46 @@ export default function AddRecipe() {
               </div>
             </Field>
             <Field label="Kalori (kcal)">
-              <input type="number" value={form.calories} onChange={e => update("calories", e.target.value)}
+              <input type="number" value={form.calories} onChange={(e) => update("calories", e.target.value)}
                 placeholder="320" style={inputStyle}
-                onFocus={e => e.target.style.borderColor = "#ff6b35"}
-                onBlur={e => e.target.style.borderColor = "#f0e8de"} />
+                onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
+                onBlur={(e) => { e.target.style.borderColor = "#f0e8de"; }} />
             </Field>
-            <Field label="Kaç Kişilik">
-              <input type="number" value={form.servings} onChange={e => update("servings", e.target.value)}
+            <Field label="Kac Kisilik">
+              <input type="number" value={form.servings} onChange={(e) => update("servings", e.target.value)}
                 placeholder="4" style={inputStyle}
-                onFocus={e => e.target.style.borderColor = "#ff6b35"}
-                onBlur={e => e.target.style.borderColor = "#f0e8de"} />
+                onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
+                onBlur={(e) => { e.target.style.borderColor = "#f0e8de"; }} />
             </Field>
           </FieldRow>
 
           <FieldRow>
-            <Field label="Hazırlama Süresi (dakika)">
-              <input type="number" value={form.preparationTime} onChange={e => update("preparationTime", e.target.value)}
+            <Field label="Hazirlanis Suresi (dakika)">
+              <input type="number" value={form.preparationTime} onChange={(e) => update("preparationTime", e.target.value)}
                 placeholder="30" style={inputStyle}
-                onFocus={e => e.target.style.borderColor = "#ff6b35"}
-                onBlur={e => e.target.style.borderColor = "#f0e8de"} />
+                onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
+                onBlur={(e) => { e.target.style.borderColor = "#f0e8de"; }} />
+            </Field>
+          </FieldRow>
+
+          <FieldRow>
+            <Field label="Tarif Gorseli">
+              <div style={{ display: "grid", gap: 10 }}>
+                <input type="file" accept="image/*" onChange={handleImagePick} style={{ ...inputStyle, padding: "8px 10px", background: "white" }} />
+                {form.image && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <img src={form.image} alt="Tarif onizleme" style={{ width: 90, height: 90, objectFit: "cover", borderRadius: 12, border: "1px solid #f0e8de" }} />
+                    <button type="button" onClick={() => update("image", "")} style={{ ...addBtn, marginTop: 0 }}>
+                      Gorseli Kaldir
+                    </button>
+                  </div>
+                )}
+              </div>
             </Field>
           </FieldRow>
         </Section>
 
-        <Section title="🧅 Malzemeler">
+        <Section title="Malzemeler">
           {form.ingredients.map((ing, i) => (
             <div key={i} style={{ display: "flex", gap: 10, marginBottom: 10 }}>
               <span style={{
@@ -191,11 +243,11 @@ export default function AddRecipe() {
               }}>{i + 1}</span>
               <input
                 value={ing}
-                onChange={e => updateList("ingredients", i, e.target.value)}
-                placeholder="örn: 1 su bardağı mercimek"
+                onChange={(e) => updateList("ingredients", i, e.target.value)}
+                placeholder="orn: 1 su bardagi mercimek"
                 style={{ ...inputStyle, flex: 1 }}
-                onFocus={e => e.target.style.borderColor = "#ff6b35"}
-                onBlur={e => e.target.style.borderColor = "#f0e8de"}
+                onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
+                onBlur={(e) => { e.target.style.borderColor = "#f0e8de"; }}
               />
               {form.ingredients.length > 1 && (
                 <button type="button" onClick={() => removeItem("ingredients", i)} style={removeBtn}>✕</button>
@@ -205,7 +257,7 @@ export default function AddRecipe() {
           <button type="button" onClick={() => addItem("ingredients")} style={addBtn}>+ Malzeme Ekle</button>
         </Section>
 
-        <Section title="👨‍🍳 Hazırlanış Adımları">
+        <Section title="Hazirlanis Adimlari">
           {form.steps.map((step, i) => (
             <div key={i} style={{ display: "flex", gap: 10, marginBottom: 12 }}>
               <span style={{
@@ -217,19 +269,19 @@ export default function AddRecipe() {
               }}>{i + 1}</span>
               <textarea
                 value={step}
-                onChange={e => updateList("steps", i, e.target.value)}
-                placeholder="Bu adımı açıkla..."
+                onChange={(e) => updateList("steps", i, e.target.value)}
+                placeholder="Bu adimi acikla..."
                 rows={2}
                 style={{ ...inputStyle, flex: 1, resize: "vertical" }}
-                onFocus={e => e.target.style.borderColor = "#ff6b35"}
-                onBlur={e => e.target.style.borderColor = "#f0e8de"}
+                onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
+                onBlur={(e) => { e.target.style.borderColor = "#f0e8de"; }}
               />
               {form.steps.length > 1 && (
                 <button type="button" onClick={() => removeItem("steps", i)} style={removeBtn}>✕</button>
               )}
             </div>
           ))}
-          <button type="button" onClick={() => addItem("steps")} style={addBtn}>+ Adım Ekle</button>
+          <button type="button" onClick={() => addItem("steps")} style={addBtn}>+ Adim Ekle</button>
         </Section>
 
         <button type="submit" disabled={submitting} style={{
@@ -246,7 +298,7 @@ export default function AddRecipe() {
           boxShadow: "0 4px 20px rgba(255,107,53,0.3)",
           marginTop: 8,
           opacity: submitting ? 0.7 : 1,
-        }}>{submitting ? "Yayinlaniyor..." : "🍳 Tarifi Yayınla"}</button>
+        }}>{submitting ? "Guncelleniyor..." : "Tarifi Kaydet"}</button>
       </form>
     </div>
   );

@@ -17,8 +17,8 @@ connectDB();
 const app = express();
 
 // --- Middleware'ler ---
-app.use(express.json()); // JSON body parse
-app.use(express.urlencoded({ extended: true })); // Form data parse
+app.use(express.json({ limit: "50mb" })); // JSON body parse - image upload için limit artırıldı
+app.use(express.urlencoded({ extended: true, limit: "50mb" })); // Form data parse
 app.use(cors()); // CORS
 app.use(helmet()); // Güvenlik header'ları
 if (process.env.NODE_ENV === "development") {

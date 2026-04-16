@@ -13,7 +13,13 @@ const normalizeIngredients = (ingredients = []) =>
     })
     .filter(Boolean);
 
-const normalizeRecipe = (recipe) => ({
+const normalizeRecipe = (recipe) => {
+  const categories = Array.isArray(recipe.category)
+    ? recipe.category.map((item) => String(item || "").trim()).filter(Boolean)
+    : [String(recipe.category || "").trim()].filter(Boolean);
+  const primaryCategory = categories[0] || "Sebze kategorisi";
+
+  return ({
   id: recipe.recipeNo,
   recipeNo: recipe.recipeNo,
   title: recipe.title,
@@ -23,8 +29,11 @@ const normalizeRecipe = (recipe) => ({
     "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&q=80",
   calories: Number(recipe.calories || 0),
   servings: Number(recipe.servings || 1),
-  category: String(recipe.category || "Sebze kategorisi"),
-  categoryValue: String(recipe.category || "Sebze kategorisi"),
+  preparationTime: Number(recipe.preparationTime || 0),
+  categories,
+  category: primaryCategory,
+  categoryValue: primaryCategory,
+  categoryValues: categories,
   dietitianApproved: Boolean(recipe.isApproved),
   ingredients: normalizeIngredients(recipe.ingredients),
   steps: Array.isArray(recipe.steps) ? recipe.steps : [],
@@ -39,13 +48,22 @@ const normalizeRecipe = (recipe) => ({
       ? String(recipe.approvedBy._id || "")
       : String(recipe.approvedBy || ""),
 });
+};
 
 const toCreatePayload = (recipeInput) => ({
   title: String(recipeInput.title || "").trim(),
   description: String(recipeInput.description || "").trim(),
-  category: String(recipeInput.categoryValue || recipeInput.category || "Sebze kategorisi"),
+  category: (() => {
+    const input = recipeInput.categoryValues || recipeInput.categories || recipeInput.category || recipeInput.categoryValue;
+    const values = Array.isArray(input) ? input : [input];
+    const normalized = values
+      .map((item) => String(item || "").trim())
+      .filter(Boolean);
+    return normalized.length > 0 ? [...new Set(normalized)] : ["Sebze kategorisi"];
+  })(),
   calories: Number(recipeInput.calories || 0),
   servings: Number(recipeInput.servings || 1),
+  preparationTime: Number(recipeInput.preparationTime || 0),
   image: String(recipeInput.image || "").trim() || null,
   ingredients: (recipeInput.ingredients || [])
     .map((raw) => {
@@ -69,6 +87,7 @@ export const RECIPES = cachedRecipes;
 export const getRecipes = async (params = {}) => {
   const query = new URLSearchParams();
   if (params.q) query.set("q", params.q);
+  if (params.category) query.set("category", params.category);
   if (typeof params.onlyApproved !== "undefined") {
     query.set("onlyApproved", String(params.onlyApproved));
   }
@@ -103,6 +122,11 @@ export const searchRecipes = async (query) => {
 
 export const createRecipe = async (recipeInput) => {
   const response = await apiClient.post("/recipes", toCreatePayload(recipeInput), { auth: true });
+  return normalizeRecipe(response?.data || {});
+};
+
+export const updateRecipe = async (recipeId, recipeInput) => {
+  const response = await apiClient.put(`/recipes/${recipeId}`, toCreatePayload(recipeInput), { auth: true });
   return normalizeRecipe(response?.data || {});
 };
 

@@ -50,8 +50,10 @@ export function RatingsProvider({ children }) {
       return { ok: false, reason: "INVALID_RATING" };
     }
 
+    let prevSnapshot = null;
     let nextSnapshot = null;
     setRatings((prev) => {
+      prevSnapshot = prev;
       const next = applyLocalRating(prev, recipeId, raterKey, ratingValue);
       nextSnapshot = next;
       persistRatings(next);
@@ -82,17 +84,25 @@ export function RatingsProvider({ children }) {
       setSyncError("");
       return { ok: true, source: "api" };
     } catch {
-      setSyncError("Puan kaydi sunucuya gonderilemedi. Yerel olarak kaydedildi.");
-      if (nextSnapshot) persistRatings(nextSnapshot);
-      return { ok: true, source: "local-fallback" };
+      const rollback = prevSnapshot || {};
+      setRatings(rollback);
+      persistRatings(rollback);
+      setSyncError("Puan kaydi sunucuya gonderilemedi.");
+      return { ok: false, source: "api", message: "Puan kaydedilemedi. Lutfen tekrar deneyin." };
     }
   };
 
-  const getRatingStats = (recipeId, raterKey) => {
+  const getRatingStats = (recipeId, raterKey, fallback = null) => {
     const record = ratings[String(recipeId)] || { byUser: {}, total: 0, count: 0 };
-    const count = record.count || 0;
-    const total = record.total || 0;
-    const average = count > 0 ? total / count : 0;
+    const localCount = Number(record.count || 0);
+    const localTotal = Number(record.total || 0);
+    const localAverage = localCount > 0 ? localTotal / localCount : 0;
+
+    const fallbackCount = Number(fallback?.count || 0);
+    const fallbackAverage = Number(fallback?.average || 0);
+
+    const count = localCount > 0 ? localCount : fallbackCount;
+    const average = localCount > 0 ? localAverage : fallbackAverage;
     const myRating = raterKey ? record.byUser?.[raterKey] || 0 : 0;
     return { average, count, myRating };
   };

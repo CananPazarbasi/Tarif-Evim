@@ -1,5 +1,20 @@
 const mongoose = require("mongoose");
 
+const CATEGORY_ENUM = [
+  "Tavuk kategorisi",
+  "Et kategorisi",
+  "Sebze kategorisi",
+  "Baklagiller",
+  "Deniz mahsülleri",
+  "Corba",
+  "Hamur işleri",
+  "Makarna",
+  "Glutensiz kategori",
+  "Vegan kategorisi",
+  "Atıştırmalık ve Tatlı",
+  "Diyetisyen onaylı tarifler",
+];
+
 const getNextRecipeNo = async () => {
   const counters = mongoose.connection.collection("counters");
   const counter = await counters.findOne({ name: "recipeNo" });
@@ -55,22 +70,17 @@ const RecipeSchema = new mongoose.Schema(
     ],
 
     category: {
-      type: String,
-      enum: [
-        "Tavuk kategorisi",
-        "Et kategorisi",
-        "Sebze kategorisi",
-        "Baklagiller",
-        "Deniz mahsülleri",
-        "Corba",
-        "Hamur işleri",
-        "Makarna",
-        "Glutensiz kategori",
-        "Vegan kategorisi",
-        "Atıştırmalık ve Tatlı",
-        "Diyetisyen onaylı tarifler",
+      type: [
+        {
+          type: String,
+          enum: CATEGORY_ENUM,
+        },
       ],
-      default: "Sebze kategorisi",
+      default: ["Sebze kategorisi"],
+      validate: {
+        validator: (value) => Array.isArray(value) && value.length > 0,
+        message: "En az bir kategori seçilmelidir",
+      },
     },
 
     calories: {
@@ -167,6 +177,11 @@ const RecipeSchema = new mongoose.Schema(
 );
 
 RecipeSchema.pre("validate", async function (next) {
+  if (!Array.isArray(this.category)) {
+    const normalized = String(this.category || "").trim();
+    this.category = normalized ? [normalized] : ["Sebze kategorisi"];
+  }
+
   if (!this.isNew || this.recipeNo) {
     return next();
   }

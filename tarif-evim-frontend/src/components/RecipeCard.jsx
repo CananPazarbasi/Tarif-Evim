@@ -7,9 +7,16 @@ import { useRatings } from "../context/RatingsContext";
 export default function RecipeCard({ recipe }) {
   const { toggleFavorite, isFavorite } = useFavorites();
   const { getRatingStats } = useRatings();
-  const { average, count } = getRatingStats(recipe.id, null);
+  const { average, count } = getRatingStats(recipe.id, null, {
+    average: Number(recipe.ratingAverage || 0),
+    count: Number(recipe.ratingCount || 0),
+  });
   const fav = isFavorite(recipe.id);
   const [warning, setWarning] = useState("");
+  const categories = Array.isArray(recipe.categories) && recipe.categories.length > 0
+    ? recipe.categories
+    : [recipe.category].filter(Boolean);
+  const categoryLabel = categories.slice(0, 2).join(" • ");
 
   const handleFavoriteClick = async (e) => {
     e.preventDefault();
@@ -58,7 +65,7 @@ export default function RecipeCard({ recipe }) {
           fontSize: 11,
           fontWeight: 700,
           letterSpacing: 0.5,
-        }}>{recipe.category}</span>
+        }}>{categoryLabel || "Kategori"}</span>
 
         {/* Fav button */}
         <button
@@ -113,7 +120,13 @@ export default function RecipeCard({ recipe }) {
           </div>
         )}
 
-        <StarRating recipeId={recipe.id} compact className="absolute bottom-3 right-3" />
+        <StarRating
+          recipeId={recipe.id}
+          compact
+          className="absolute bottom-3 right-3"
+          initialAverage={Number(recipe.ratingAverage || 0)}
+          initialCount={Number(recipe.ratingCount || 0)}
+        />
       </div>
 
       {/* Content */}

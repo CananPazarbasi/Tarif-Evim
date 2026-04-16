@@ -463,7 +463,7 @@ export default function Layout() {
           {categories.map((cat) => (
             <Link
               key={cat.value}
-              to={`/?category=${cat.value}`}
+              to={`/category/${encodeURIComponent(cat.value)}`}
               onClick={() => setSidebarOpen(false)}
               style={{
                 display: "flex",
