@@ -25,7 +25,7 @@ export default function StarRating({ recipeId, compact = false, className = "", 
 
   const handleRate = async (star) => {
     if (!user) {
-      showToast("Lutfen puan vermek icin giris yapin");
+      showToast("Lütfen puan vermek için giriş yapın");
       return;
     }
     const result = await setRating(recipeId, star, user);

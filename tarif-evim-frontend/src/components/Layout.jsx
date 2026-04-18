@@ -10,7 +10,7 @@ const categoryVisualByValue = {
   "Sebze kategorisi": { icon: "🥦", color: "#4ade80" },
   "Baklagiller": { icon: "🫘", color: "#a78bfa" },
   "Deniz mahsülleri": { icon: "🐟", color: "#38bdf8" },
-  "Corba": { icon: "🍲", color: "#f59e0b" },
+  "Çorba": { icon: "🍲", color: "#f59e0b" },
   "Hamur işleri": { icon: "🥐", color: "#fb7185" },
   "Makarna": { icon: "🍝", color: "#f97316" },
   "Glutensiz kategori": { icon: "🌾", color: "#fbbf24" },
@@ -90,8 +90,8 @@ export default function Layout() {
   };
 
   const removeAccount = async () => {
-    if (deleteConfirm.trim().toUpperCase() !== "SIL") {
-      setSettingsMessage("Hesabı silmek için SIL yazmalısın.");
+    if (deleteConfirm.trim().toUpperCase() !== "SİL") {
+      setSettingsMessage("Hesabı silmek için SİL yazmalısın.");
       return;
     }
 
@@ -136,7 +136,7 @@ export default function Layout() {
   return (
     <div style={{ fontFamily: "'Nunito', sans-serif", minHeight: "100vh", background: "#fdf8f3" }}>
       {/* Google Font */}
-      <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Roboto:wght@700&display=swap" rel="stylesheet" />
 
       {/* Header */}
       <header style={{
@@ -169,7 +169,7 @@ export default function Layout() {
 
           {/* Logo */}
           <Link to="/" style={{ textDecoration: "none", display: "flex", alignItems: "center" }}>
-            <img src="/logo.svg" alt="Tarif Evim" style={{ height: 46, width: "auto", display: "block" }} />
+            <img src="/logo.png" alt="Tarif Evim" style={{ height: 46, width: "auto", display: "block" }} />
           </Link>
 
           {/* Search */}
@@ -260,7 +260,17 @@ export default function Layout() {
               }}
               title="Profil Ayarları"
             >
-              ⚙
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
+                <path d="M4 20c0-3.314 3.582-6 8-6s8 2.686 8 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+              </svg>
             </button>
 
             {showProfileMenu && (
@@ -333,7 +343,7 @@ export default function Layout() {
             }}
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontSize: 24, color: "#1f2937" }}>
+              <h3 style={{ margin: 0, fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 24, color: "#1f2937" }}>
                 {activeSettingsPanel === "profile" && "Profil Bilgileri"}
                 {activeSettingsPanel === "password" && "Şifre Değiştir"}
                 {activeSettingsPanel === "delete" && "Hesabımı Sil"}
@@ -437,7 +447,7 @@ export default function Layout() {
         position: "fixed",
         top: 0, left: 0, bottom: 0,
         width: 280,
-        background: "linear-gradient(180deg, #1a0a00 0%, #2d1200 100%)",
+        background: "linear-gradient(180deg, #e39b2f 0%, #e3a02b 100%)",
         zIndex: 200,
         transform: sidebarOpen ? "translateX(0)" : "translateX(-100%)",
         transition: "transform .35s cubic-bezier(.4,0,.2,1)",
@@ -448,7 +458,7 @@ export default function Layout() {
       }}>
         <div style={{ padding: "28px 24px 20px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <img src="/logo.svg" alt="Tarif Evim" style={{ height: 44, width: "auto", display: "block" }} />
+            <img src="/logo.png" alt="Tarif Evim" style={{ height: 44, width: "auto", display: "block" }} />
             <button onClick={() => setSidebarOpen(false)} style={{
               background: "none", border: "none", color: "rgba(255,255,255,0.5)",
               fontSize: 20, cursor: "pointer",
@@ -457,7 +467,7 @@ export default function Layout() {
         </div>
 
         <div style={{ padding: "24px 16px", overflowY: "auto", minHeight: 0, flex: 1, overscrollBehavior: "contain" }}>
-          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 16, paddingLeft: 8 }}>
+          <p style={{ color: "rgb(255, 255, 255)", fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 16, paddingLeft: 8 }}>
             Kategoriler
           </p>
           {categories.map((cat) => (
@@ -476,7 +486,7 @@ export default function Layout() {
                 transition: "background .2s",
                 cursor: "pointer",
               }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
+              onMouseEnter={e => e.currentTarget.style.background = "rgb(59, 40, 11)"}
               onMouseLeave={e => e.currentTarget.style.background = "transparent"}
             >
               <span style={{
@@ -494,7 +504,7 @@ export default function Layout() {
 
         <div style={{ padding: "0 16px", marginTop: "auto", paddingBottom: 24 }}>
           <div style={{
-            background: "linear-gradient(135deg, #ff6b35, #f7931e)",
+            background: "linear-gradient(135deg, #41280a, #6a3f0f)",
             borderRadius: 16,
             padding: "20px",
             textAlign: "center",

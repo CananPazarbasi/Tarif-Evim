@@ -87,12 +87,12 @@ export default function EditRecipe() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setError("Lutfen gecerli bir gorsel dosyasi secin.");
+      setError("Lütfen geçerli bir görsel dosyası seçin.");
       return;
     }
 
     if (file.size > 4 * 1024 * 1024) {
-      setError("Gorsel boyutu en fazla 4MB olabilir.");
+      setError("Görsel boyutu en fazla 4MB olabilir.");
       return;
     }
 
@@ -100,19 +100,19 @@ export default function EditRecipe() {
       const dataUrl = await fileToDataUrl(file);
       update("image", dataUrl);
     } catch {
-      setError("Gorsel okunamadi. Lutfen tekrar deneyin.");
+      setError("Görsel okunamadı. Lütfen tekrar deneyin.");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
-      setError("Tarif duzenlemek icin lutfen giris yapin.");
+      setError("Tarif düzenlemek için lütfen giriş yapın.");
       return;
     }
 
     if (!Array.isArray(form.categoryValues) || form.categoryValues.length === 0) {
-      setError("Lutfen en az bir kategori secin.");
+      setError("Lütfen en az bir kategori seçin.");
       return;
     }
 
@@ -127,7 +127,7 @@ export default function EditRecipe() {
     } catch (apiError) {
       console.error("Güncelleme hatası:", apiError);
       setSubmitting(false);
-      setError(apiError.message || "Tarif guncellenemedi.");
+      setError(apiError.message || "Tarif güncellenemedi.");
       return;
     }
 
@@ -135,24 +135,24 @@ export default function EditRecipe() {
   };
 
   if (loading) {
-    return <div style={{ textAlign: "center", padding: "100px 0", color: "#999", fontWeight: 700 }}>Tarif yukleniyor...</div>;
+    return <div style={{ textAlign: "center", padding: "100px 0", color: "#999", fontWeight: 700 }}>Tarif yükleniyor...</div>;
   }
 
   if (error && !submitting && !form.title) {
     return (
       <div style={{ maxWidth: 700, margin: "0 auto", paddingTop: 24 }}>
         <p style={{ color: "#b91c1c", fontWeight: 700, marginBottom: 12 }}>{error}</p>
-        <Link to="/" style={{ color: "#ff6b35", fontWeight: 800, textDecoration: "none" }}>← Ana Sayfaya Don</Link>
+        <Link to="/" style={{ color: "#ff6b35", fontWeight: 800, textDecoration: "none" }}>← Ana Sayfaya Dön</Link>
       </div>
     );
   }
 
   return (
     <div style={{ maxWidth: 700, margin: "0 auto" }}>
-      <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 900, color: "#1a1a1a", marginBottom: 8 }}>
-        ✏️ Tarifi Duzenle
+      <h1 style={{ fontFamily: "'Roboto', sans-serif", fontSize: 32, fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
+        ✏️ Tarifi Düzenle
       </h1>
-      <p style={{ color: "#999", marginBottom: 36, fontSize: 14 }}>Sadece size ait tarif bilgilerini guncelleyebilirsiniz</p>
+      <p style={{ color: "#999", marginBottom: 36, fontSize: 14 }}>Sadece size ait tarif bilgilerini güncelleyebilirsiniz</p>
 
       {error && (
         <div style={{
@@ -165,9 +165,9 @@ export default function EditRecipe() {
       <form onSubmit={handleSubmit}>
         <Section title="Temel Bilgiler">
           <FieldRow>
-            <Field label="Tarif Adi" required>
+            <Field label="Tarif Adı" required>
               <input value={form.title} onChange={(e) => update("title", e.target.value)}
-                placeholder="orn: Mercimek Corbasi" style={inputStyle} required
+                placeholder="örn: Mercimek Çorbası" style={inputStyle} required
                 onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
                 onBlur={(e) => { e.target.style.borderColor = "#f0e8de"; }} />
             </Field>
@@ -197,7 +197,7 @@ export default function EditRecipe() {
                 onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
                 onBlur={(e) => { e.target.style.borderColor = "#f0e8de"; }} />
             </Field>
-            <Field label="Kac Kisilik">
+            <Field label="Kaç Kişilik">
               <input type="number" value={form.servings} onChange={(e) => update("servings", e.target.value)}
                 placeholder="4" style={inputStyle}
                 onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
@@ -206,7 +206,7 @@ export default function EditRecipe() {
           </FieldRow>
 
           <FieldRow>
-            <Field label="Hazirlanis Suresi (dakika)">
+            <Field label="Hazırlanış Süresi (dakika)">
               <input type="number" value={form.preparationTime} onChange={(e) => update("preparationTime", e.target.value)}
                 placeholder="30" style={inputStyle}
                 onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
@@ -215,12 +215,12 @@ export default function EditRecipe() {
           </FieldRow>
 
           <FieldRow>
-            <Field label="Tarif Gorseli">
+            <Field label="Tarif Görseli">
               <div style={{ display: "grid", gap: 10 }}>
                 <input type="file" accept="image/*" onChange={handleImagePick} style={{ ...inputStyle, padding: "8px 10px", background: "white" }} />
                 {form.image && (
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <img src={form.image} alt="Tarif onizleme" style={{ width: 90, height: 90, objectFit: "cover", borderRadius: 12, border: "1px solid #f0e8de" }} />
+                    <img src={form.image} alt="Tarif önizleme" style={{ width: 90, height: 90, objectFit: "cover", borderRadius: 12, border: "1px solid #f0e8de" }} />
                     <button type="button" onClick={() => update("image", "")} style={{ ...addBtn, marginTop: 0 }}>
                       Gorseli Kaldir
                     </button>
@@ -244,7 +244,7 @@ export default function EditRecipe() {
               <input
                 value={ing}
                 onChange={(e) => updateList("ingredients", i, e.target.value)}
-                placeholder="orn: 1 su bardagi mercimek"
+                placeholder="örn: 1 su bardağı mercimek"
                 style={{ ...inputStyle, flex: 1 }}
                 onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
                 onBlur={(e) => { e.target.style.borderColor = "#f0e8de"; }}
@@ -257,7 +257,7 @@ export default function EditRecipe() {
           <button type="button" onClick={() => addItem("ingredients")} style={addBtn}>+ Malzeme Ekle</button>
         </Section>
 
-        <Section title="Hazirlanis Adimlari">
+        <Section title="Hazırlanış Adımları">
           {form.steps.map((step, i) => (
             <div key={i} style={{ display: "flex", gap: 10, marginBottom: 12 }}>
               <span style={{
@@ -270,7 +270,7 @@ export default function EditRecipe() {
               <textarea
                 value={step}
                 onChange={(e) => updateList("steps", i, e.target.value)}
-                placeholder="Bu adimi acikla..."
+                placeholder="Bu adımı açıkla..."
                 rows={2}
                 style={{ ...inputStyle, flex: 1, resize: "vertical" }}
                 onFocus={(e) => { e.target.style.borderColor = "#ff6b35"; }}
@@ -281,7 +281,7 @@ export default function EditRecipe() {
               )}
             </div>
           ))}
-          <button type="button" onClick={() => addItem("steps")} style={addBtn}>+ Adim Ekle</button>
+          <button type="button" onClick={() => addItem("steps")} style={addBtn}>+ Adım Ekle</button>
         </Section>
 
         <button type="submit" disabled={submitting} style={{
@@ -298,7 +298,7 @@ export default function EditRecipe() {
           boxShadow: "0 4px 20px rgba(255,107,53,0.3)",
           marginTop: 8,
           opacity: submitting ? 0.7 : 1,
-        }}>{submitting ? "Guncelleniyor..." : "Tarifi Kaydet"}</button>
+        }}>{submitting ? "Güncelleniyor..." : "Tarifi Kaydet"}</button>
       </form>
     </div>
   );
@@ -313,7 +313,7 @@ function Section({ title, children }) {
       marginBottom: 24,
       boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
     }}>
-      <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, margin: "0 0 20px", color: "#1a1a1a" }}>{title}</h3>
+      <h3 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 18, margin: "0 0 20px", color: "#1a1a1a" }}>{title}</h3>
       {children}
     </div>
   );

@@ -254,7 +254,7 @@ export default function ShoppingList() {
 
   return (
     <div style={{ maxWidth: 560, margin: "0 auto" }}>
-      <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 900, color: "#1a1a1a", marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Roboto', sans-serif", fontSize: 32, fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
         📋 Alışveriş Listesi
       </h1>
       <p style={{ color: "#999", marginBottom: 24, fontSize: 14 }}>{items.length} ürün · {checked} tamamlandı</p>
@@ -266,7 +266,7 @@ export default function ShoppingList() {
         marginBottom: 24,
         boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
       }}>
-        <h3 style={{ margin: "0 0 8px", fontSize: 18, color: "#1a1a1a", fontFamily: "'Playfair Display', serif" }}>
+        <h3 style={{ margin: "0 0 8px", fontSize: 18, color: "#1a1a1a", fontFamily: "'Roboto', sans-serif", fontWeight: 700 }}>
           Tarif veya Menü Seç
         </h3>
         <p style={{ margin: "0 0 14px", color: "#888", fontSize: 13 }}>
@@ -298,7 +298,7 @@ export default function ShoppingList() {
           <input
             value={recipeSearch}
             onChange={(e) => setRecipeSearch(e.target.value)}
-            placeholder="Tarif adina gore ara..."
+            placeholder="Tarif adına göre ara..."
             style={{
               width: "100%",
               border: "2px solid #f0e8de",
@@ -386,7 +386,7 @@ export default function ShoppingList() {
             value={manualMenuInput}
             onChange={(e) => setManualMenuInput(e.target.value)}
             rows={3}
-            placeholder="Ornek: Mercimek Corbasi, Sufle veya satir satir menu yaz"
+            placeholder="Örnek: Mercimek Çorbası, Sufle veya satır satır menu yaz"
             style={{
               width: "100%",
               border: "2px solid #f0e8de",
@@ -400,7 +400,7 @@ export default function ShoppingList() {
             }}
           />
           <p style={{ margin: "6px 0 0", color: "#9ca3af", fontSize: 12 }}>
-            Yazdigin adlar mevcut tariflerle eslesirse malzemeler otomatik listeye eklenir.
+            Yazdığınız adlar mevcut tariflerle eşleşirse malzemeler otomatik listeye eklenir.
           </p>
         </div>
 
@@ -456,7 +456,7 @@ export default function ShoppingList() {
             fontSize: 12,
             fontWeight: 600,
           }}>
-            Eslesmeyen menuler: {unmatchedMenus.join(", ")}
+            Eşleşmeyen Menüler: {unmatchedMenus.join(", ")}
           </div>
         )}
       </div>

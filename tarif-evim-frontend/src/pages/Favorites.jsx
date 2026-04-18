@@ -12,11 +12,11 @@ export default function Favorites() {
     return (
       <div style={{ textAlign: "center", padding: "100px 0" }}>
         <div style={{ fontSize: 60, marginBottom: 16 }}>🔒</div>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#1a1a1a", marginBottom: 8 }}>
-          Favoriler Yalnizca Uyeler Icin
+        <h2 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 28, color: "#1a1a1a", marginBottom: 8 }}>
+          Favoriler Yalnızca Üyeler İçin
         </h2>
         <p style={{ color: "#888", marginBottom: 24 }}>
-          Favori tariflerini gormek ve kaydetmek icin lutfen giris yap.
+          Favori tariflerini görmek ve kaydetmek için lütfen giriş yap.
         </p>
         <Link to="/login" style={{
           background: "linear-gradient(135deg, #ff6b35, #f7931e)",
@@ -26,7 +26,7 @@ export default function Favorites() {
           padding: "12px 28px",
           fontWeight: 800,
         }}>
-          Giris Yap
+          Giriş Yap
         </Link>
       </div>
     );
@@ -34,7 +34,7 @@ export default function Favorites() {
 
   return (
     <div>
-      <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 900, color: "#1a1a1a", marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Roboto', sans-serif", fontSize: 32, fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
         ♥ Favori Tariflerim
       </h1>
       <p style={{ color: "#999", marginBottom: 36, fontSize: 14 }}>Kaydettiğin tarifler burada</p>
@@ -42,7 +42,7 @@ export default function Favorites() {
       {favorites.length === 0 ? (
         <div style={{ textAlign: "center", padding: "100px 0" }}>
           <div style={{ fontSize: 64, marginBottom: 20 }}>🤍</div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, color: "#1a1a1a" }}>Henüz favori yok</h2>
+          <h2 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 22, color: "#1a1a1a" }}>Henüz favori yok</h2>
           <p style={{ color: "#aaa", marginBottom: 24 }}>Tarifleri kalp ikonuna tıklayarak favorile</p>
           <Link to="/" style={{
             background: "linear-gradient(135deg, #ff6b35, #f7931e)",

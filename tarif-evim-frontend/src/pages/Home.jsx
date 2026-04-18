@@ -81,12 +81,12 @@ export default function Home() {
   return (
     <div>
       {loading && (
-        <p style={{ color: "#888", marginBottom: 18, fontWeight: 700 }}>Tarifler yukleniyor...</p>
+        <p style={{ color: "#888", marginBottom: 18, fontWeight: 700 }}>Tarifler yükleniyor...</p>
       )}
 
       {/* Popular */}
       <section style={{ marginBottom: 28 }}>
-        <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, margin: "0 0 14px", color: "#1a1a1a" }}>
+        <h2 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 28, margin: "0 0 14px", color: "#1a1a1a" }}>
           Popüler
         </h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
@@ -116,7 +116,7 @@ export default function Home() {
       {/* Suggestion + Shopping + Ingredient Search */}
       <section style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, marginBottom: 28 }}>
         <div style={{ background: "linear-gradient(180deg, #ffffff 0%, #fffaf6 100%)", border: "1px solid #f0e8de", borderRadius: 18, padding: 18, boxShadow: "0 6px 20px rgba(0,0,0,0.06)" }}>
-          <h3 style={{ margin: "0 0 10px", color: "#1a1a1a", fontSize: 20, fontFamily: "'Playfair Display', serif" }}>Tarif Öneri</h3>
+          <h3 style={{ margin: "0 0 10px", color: "#1a1a1a", fontSize: 20, fontFamily: "'Roboto', sans-serif", fontWeight: 700 }}>Tarif Öneri</h3>
           <p style={{ margin: "0 0 14px", color: "#6b7280", fontSize: 13 }}>Bana bir tarif öner butonuna bas, sana hızlıca bir seçenek çıkaralım.</p>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button
@@ -153,7 +153,7 @@ export default function Home() {
         </div>
 
         <div style={{ background: "linear-gradient(180deg, #ffffff 0%, #fffaf6 100%)", border: "1px solid #f0e8de", borderRadius: 18, padding: 18, boxShadow: "0 6px 20px rgba(0,0,0,0.06)" }}>
-          <h3 style={{ margin: "0 0 10px", color: "#1a1a1a", fontSize: 20, fontFamily: "'Playfair Display', serif" }}>Alışveriş Listesi Oluştur</h3>
+          <h3 style={{ margin: "0 0 10px", color: "#1a1a1a", fontSize: 20, fontFamily: "'Roboto', sans-serif", fontWeight: 700 }}>Alışveriş Listesi Oluştur</h3>
           <p style={{ margin: "0 0 12px", color: "#6b7280", fontSize: 13 }}>Bir tarif seç, ardından alışveriş listene eklemeye başla.</p>
           <button
             onClick={handleShoppingStart}
@@ -186,7 +186,7 @@ export default function Home() {
           overflow: "hidden",
         }}>
           <div style={{ position: "absolute", right: -18, top: -20, width: 110, height: 110, borderRadius: "50%", background: "rgba(251,146,60,0.12)" }} />
-          <h3 style={{ position: "relative", margin: "0 0 10px", color: "#1a1a1a", fontSize: 20, fontFamily: "'Playfair Display', serif" }}>
+          <h3 style={{ position: "relative", margin: "0 0 10px", color: "#1a1a1a", fontSize: 20, fontFamily: "'Roboto', sans-serif", fontWeight: 700 }}>
             Malzemeye Göre Bul
           </h3>
           <p style={{ position: "relative", margin: "0 0 14px", color: "#6b7280", fontSize: 13 }}>
@@ -313,7 +313,7 @@ export default function Home() {
               boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
             }}
           >
-            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 22, margin: "0 0 8px", color: "#1a1a1a" }}>
+            <h2 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 22, margin: "0 0 8px", color: "#1a1a1a" }}>
               🧅 Malzemeye Göre Ara
             </h2>
             <p style={{ color: "#999", fontSize: 13, marginBottom: 24 }}>Elimdeki malzemelere göre tarifler bul</p>

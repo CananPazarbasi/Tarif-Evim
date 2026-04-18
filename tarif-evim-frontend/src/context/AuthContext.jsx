@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
       persistUser(normalizeUser(response.user));
       return { ok: true };
     } catch (error) {
-      return { ok: false, message: error.message || "Giris yapilamadi" };
+      return { ok: false, message: error.message || "Giriş yapılamadı" };
     }
   };
 
@@ -81,7 +81,7 @@ export function AuthProvider({ children }) {
       persistUser(normalizeUser(response.user));
       return { ok: true };
     } catch (error) {
-      return { ok: false, message: error.message || "Kayit olunamadi" };
+      return { ok: false, message: error.message || "Kayıt olunamadı" };
     }
   };
 
@@ -108,9 +108,9 @@ export function AuthProvider({ children }) {
         { currentPassword, newPassword },
         { auth: true },
       );
-      return { ok: true, message: "Sifre basariyla guncellendi." };
+      return { ok: true, message: "Şifre başarıyla güncellendi." };
     } catch (error) {
-      return { ok: false, message: error.message || "Sifre guncellenemedi" };
+      return { ok: false, message: error.message || "Şifre güncellenemedi" };
     }
   };
 

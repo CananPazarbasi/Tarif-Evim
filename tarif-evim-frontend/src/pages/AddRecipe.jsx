@@ -18,7 +18,7 @@ export default function AddRecipe() {
   const fileToDataUrl = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result || ""));
-    reader.onerror = () => reject(new Error("Gorsel okunamadi."));
+    reader.onerror = () => reject(new Error("Görsel okunamadı."));
     reader.readAsDataURL(file);
   });
 
@@ -42,12 +42,12 @@ export default function AddRecipe() {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      setError("Lutfen gecerli bir gorsel dosyasi secin.");
+      setError("Lütfen geçerli bir görsel dosyası seçin.");
       return;
     }
 
     if (file.size > 4 * 1024 * 1024) {
-      setError("Gorsel boyutu en fazla 4MB olabilir.");
+      setError("Görsel boyutu en fazla 4MB olabilir.");
       return;
     }
 
@@ -55,19 +55,19 @@ export default function AddRecipe() {
       const dataUrl = await fileToDataUrl(file);
       update("image", dataUrl);
     } catch {
-      setError("Gorsel okunamadi. Lutfen tekrar deneyin.");
+      setError("Görsel okunamadı. Lütfen tekrar deneyin.");
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
-      setError("Tarif eklemek icin lutfen giris yapin.");
+      setError("Tarif eklemek için lütfen giriş yapın.");
       return;
     }
 
     if (!Array.isArray(form.categoryValues) || form.categoryValues.length === 0) {
-      setError("Lutfen en az bir kategori secin.");
+      setError("Lütfen en az bir kategori seçin.");
       return;
     }
 
@@ -78,7 +78,7 @@ export default function AddRecipe() {
       await createRecipe(form);
     } catch (apiError) {
       setSubmitting(false);
-      setError(apiError.message || "Tarif yayinlanamadi.");
+      setError(apiError.message || "Tarif yayınlanamadı.");
       return;
     }
 
@@ -90,14 +90,14 @@ export default function AddRecipe() {
   if (submitted) return (
     <div style={{ textAlign: "center", padding: "100px 0" }}>
       <div style={{ fontSize: 72, marginBottom: 16 }}>🎉</div>
-      <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 28, color: "#1a1a1a" }}>Tarif Yayınlandı!</h2>
+      <h2 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 28, color: "#1a1a1a" }}>Tarif Yayınlandı!</h2>
       <p style={{ color: "#999" }}>Tarif yayınlandı.</p>
     </div>
   );
 
   return (
     <div style={{ maxWidth: 700, margin: "0 auto" }}>
-      <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 32, fontWeight: 900, color: "#1a1a1a", marginBottom: 8 }}>
+      <h1 style={{ fontFamily: "'Roboto', sans-serif", fontSize: 32, fontWeight: 700, color: "#1a1a1a", marginBottom: 8 }}>
         ➕ Tarif Ekle
       </h1>
       <p style={{ color: "#999", marginBottom: 36, fontSize: 14 }}>Yeni bir tarifi topluluğunla paylaş</p>
@@ -121,14 +121,14 @@ export default function AddRecipe() {
             </Field>
 
           <FieldRow>
-            <Field label="Tarif Gorseli">
+            <Field label="Tarif Görseli">
               <div style={{ display: "grid", gap: 10 }}>
                 <input type="file" accept="image/*" onChange={handleImagePick} style={{ ...inputStyle, padding: "8px 10px", background: "white" }} />
                 {form.image && (
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <img src={form.image} alt="Tarif onizleme" style={{ width: 90, height: 90, objectFit: "cover", borderRadius: 12, border: "1px solid #f0e8de" }} />
+                    <img src={form.image} alt="Tarif önizleme" style={{ width: 90, height: 90, objectFit: "cover", borderRadius: 12, border: "1px solid #f0e8de" }} />
                     <button type="button" onClick={() => update("image", "")} style={{ ...addBtn, marginTop: 0 }}>
-                      Gorseli Kaldir
+                      Görseli Kaldır
                     </button>
                   </div>
                 )}
@@ -246,7 +246,7 @@ export default function AddRecipe() {
           boxShadow: "0 4px 20px rgba(255,107,53,0.3)",
           marginTop: 8,
           opacity: submitting ? 0.7 : 1,
-        }}>{submitting ? "Yayinlaniyor..." : "🍳 Tarifi Yayınla"}</button>
+        }}>{submitting ? "Yayınlanıyor..." : "🍳 Tarifi Yayınla"}</button>
       </form>
     </div>
   );
@@ -261,7 +261,7 @@ function Section({ title, children }) {
       marginBottom: 24,
       boxShadow: "0 2px 16px rgba(0,0,0,0.06)",
     }}>
-      <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, margin: "0 0 20px", color: "#1a1a1a" }}>{title}</h3>
+      <h3 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 18, margin: "0 0 20px", color: "#1a1a1a" }}>{title}</h3>
       {children}
     </div>
   );

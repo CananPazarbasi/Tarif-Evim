@@ -25,7 +25,7 @@ export default function Register() {
     const result = await register({ name, email, password, role });
     setSubmitting(false);
     if (!result.ok) {
-      setError(result.message || "Kayit olunamadi.");
+      setError(result.message || "Kayıt olunamadı.");
       return;
     }
     navigate("/");
@@ -41,16 +41,16 @@ export default function Register() {
       padding: 24,
       fontFamily: "'Nunito', sans-serif",
     }}>
-      <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Roboto:wght@700&display=swap" rel="stylesheet" />
 
       <div style={{ width: "100%", maxWidth: 480 }}>
         <div style={{ textAlign: "center", marginBottom: 36 }}>
           <Link to="/" style={{ textDecoration: "none" }}>
-            <img src="/logo.svg" alt="Tarif Evim" style={{ height: 66, width: "auto", margin: "0 auto 8px", display: "block" }} />
+            <img src="/logo.png" alt="Tarif Evim" style={{ height: 66, width: "auto", margin: "0 auto 8px", display: "block" }} />
             <span style={{
-              fontFamily: "'Playfair Display', serif",
+              fontFamily: "'Roboto', sans-serif",
               fontSize: 28,
-              fontWeight: 900,
+              fontWeight: 700,
               background: "linear-gradient(135deg, #ff6b35, #f7931e)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
@@ -66,8 +66,8 @@ export default function Register() {
           border: "1px solid rgba(255,107,53,0.1)",
         }}>
           <h1 style={{
-            fontFamily: "'Playfair Display', serif",
-            fontSize: 24, fontWeight: 900, color: "#1a1a1a", margin: "0 0 6px",
+            fontFamily: "'Roboto', sans-serif",
+            fontSize: 24, fontWeight: 700, color: "#1a1a1a", margin: "0 0 6px",
           }}>Hesap Oluştur 🎉</h1>
           <p style={{ color: "#999", fontSize: 13, margin: "0 0 28px" }}>Lezzet dünyasına katıl</p>
 
@@ -123,7 +123,7 @@ export default function Register() {
               boxShadow: "0 4px 16px rgba(255,107,53,0.3)",
               marginTop: 8,
               opacity: submitting ? 0.7 : 1,
-            }}>{submitting ? "Kayit olusturuluyor..." : "Kayıt Ol →"}</button>
+            }}>{submitting ? "Kayıt oluşturuluyor..." : "Kayıt Ol →"}</button>
           </form>
 
           <p style={{ textAlign: "center", marginTop: 24, color: "#999", fontSize: 13 }}>

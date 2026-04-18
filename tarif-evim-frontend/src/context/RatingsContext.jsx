@@ -42,7 +42,7 @@ export function RatingsProvider({ children }) {
   const setRating = async (recipeId, stars, user) => {
     const raterKey = getRaterKey(user);
     if (!raterKey) {
-      return { ok: false, reason: "AUTH_REQUIRED", message: "Lutfen puan vermek icin giris yapin." };
+      return { ok: false, reason: "AUTH_REQUIRED", message: "Lütfen puan vermek için giriş yapın." };
     }
 
     const ratingValue = Math.max(1, Math.min(5, Number(stars) || 0));
@@ -87,8 +87,8 @@ export function RatingsProvider({ children }) {
       const rollback = prevSnapshot || {};
       setRatings(rollback);
       persistRatings(rollback);
-      setSyncError("Puan kaydi sunucuya gonderilemedi.");
-      return { ok: false, source: "api", message: "Puan kaydedilemedi. Lutfen tekrar deneyin." };
+      setSyncError("Puan kaydı sunucuya gönderilemedi.");
+      return { ok: false, source: "api", message: "Puan kaydedilemedi. Lütfen tekrar deneyin." };
     }
   };
 

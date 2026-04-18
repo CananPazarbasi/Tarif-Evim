@@ -120,14 +120,14 @@ export default function IngredientSearch() {
       >
         <div style={{ position: "absolute", right: -50, top: -50, width: 180, height: 180, borderRadius: "50%", background: "rgba(251,146,60,0.14)" }} />
         <div style={{ position: "relative" }}>
-          <h1 style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontSize: 38, fontWeight: 900, color: "#ea580c" }}>
-            Malzemeye Gore Tarif Bul
+          <h1 style={{ margin: 0, fontFamily: "'Roboto', sans-serif", fontSize: 38, fontWeight: 700, color: "#ea580c" }}>
+            Malzemeye Göre Tarif Bul
           </h1>
           <p style={{ margin: "10px 0 18px", color: "#6b7280", fontSize: 16, maxWidth: 760 }}>
-            Elindeki malzemeleri ekle, sana en uygun tarifleri eslesme oranina gore siralayalim.
+            Elindeki malzemeleri ekle, sana en uygun tarifleri eşleşme oranına göre sıralayalım.
           </p>
           {loading && (
-            <p style={{ margin: "0 0 10px", color: "#9ca3af", fontSize: 13, fontWeight: 700 }}>Tarifler yukleniyor...</p>
+            <p style={{ margin: "0 0 10px", color: "#9ca3af", fontSize: 13, fontWeight: 700 }}>Tarifler yükleniyor...</p>
           )}
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
@@ -140,7 +140,7 @@ export default function IngredientSearch() {
                   addIngredient();
                 }
               }}
-              placeholder="Orn: domates, sogan, mercimek"
+              placeholder="Örn: domates, soğan, mercimek"
               style={{
                 flex: 1,
                 minWidth: 280,
@@ -174,7 +174,7 @@ export default function IngredientSearch() {
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8, minHeight: 40, marginBottom: 14 }}>
             {selectedIngredients.length === 0 && (
-              <span style={{ fontSize: 13, color: "#9ca3af" }}>Henuz malzeme eklenmedi.</span>
+              <span style={{ fontSize: 13, color: "#9ca3af" }}>Henüz malzeme eklenmedi.</span>
             )}
             {selectedIngredients.map((ingredient) => (
               <span
@@ -250,14 +250,14 @@ export default function IngredientSearch() {
       {searched && selectedIngredients.length > 0 && (
         <section style={{ marginBottom: 18, borderRadius: 14, border: "1px solid #fed7aa", background: "#fff7ed", padding: "12px 14px", fontSize: 14, color: "#9a3412", fontWeight: 700 }}>
           {searchResults.length > 0
-            ? `En iyi eslesen tarif: ${topResult.recipe.title} (${topResult.matched}/${topResult.total} - %${topResult.percent})`
-            : "Bu malzemelerle eslesen tarif bulunamadi."}
+            ? `En iyi eşleşen tarif: ${topResult.recipe.title} (${topResult.matched}/${topResult.total} - %${topResult.percent})`
+            : "Bu malzemelerle eşleşen tarif bulunamadı."}
         </section>
       )}
 
       {searched && searchResults.length === 0 ? (
         <div style={{ textAlign: "center", padding: "52px 0", color: "#9ca3af", fontWeight: 700 }}>
-          Bu malzemelerle uygun tarif bulunamadi.
+          Bu malzemelerle uygun tarif bulunamadı.
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
@@ -267,7 +267,7 @@ export default function IngredientSearch() {
 
               <div style={{ padding: 16 }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10, marginBottom: 8 }}>
-                  <h2 style={{ margin: 0, fontFamily: "'Playfair Display', serif", fontSize: 26, lineHeight: 1.15, color: "#1f2937" }}>{item.recipe.title}</h2>
+                  <h2 style={{ margin: 0, fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 26, lineHeight: 1.15, color: "#1f2937" }}>{item.recipe.title}</h2>
                   <span style={{ borderRadius: 999, background: "#ffedd5", color: "#c2410c", padding: "5px 10px", fontSize: 12, fontWeight: 800 }}>%{item.percent}</span>
                 </div>
 
@@ -284,7 +284,7 @@ export default function IngredientSearch() {
                 <div style={{ marginBottom: 14, borderRadius: 12, border: "1px solid #ffedd5", background: "#fffaf5", padding: 10 }}>
                   <p style={{ margin: "0 0 6px", fontSize: 12, fontWeight: 800, color: "#c2410c" }}>Eksik Malzemeler</p>
                   {item.missing.length === 0 ? (
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#16a34a" }}>Tum malzemeler elinizde.</p>
+                    <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#16a34a" }}>Tüm malzemeler elinizde.</p>
                   ) : (
                     <ul style={{ margin: 0, paddingLeft: 16 }}>
                       {item.missing.map((missingItem) => (
@@ -312,7 +312,7 @@ export default function IngredientSearch() {
                     boxShadow: "0 8px 18px rgba(249,115,22,0.25)",
                   }}
                 >
-                  Tarifi Goruntule
+                  Tarifi Görüntüle
                 </Link>
               </div>
             </article>

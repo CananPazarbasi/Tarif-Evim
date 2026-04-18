@@ -49,12 +49,12 @@ export function FavoritesProvider({ children }) {
 
   const toggleFavorite = async (recipe) => {
     if (!user?.email) {
-      return { ok: false, reason: "AUTH_REQUIRED", message: "Favorilere eklemek icin lutfen giris yapin." };
+      return { ok: false, reason: "AUTH_REQUIRED", message: "Favorilere eklemek için lütfen giriş yapın." };
     }
 
     const recipeRef = recipe.recipeNo || recipe.id;
     if (!recipeRef) {
-      return { ok: false, message: "Tarif referansi bulunamadi" };
+      return { ok: false, message: "Tarif referansı bulunamadı" };
     }
 
     const exists = favorites.some((item) => item.id === recipeRef);
@@ -76,7 +76,7 @@ export function FavoritesProvider({ children }) {
       }
       return { ok: true };
     } catch (error) {
-      return { ok: false, message: error.message || "Favori guncellenemedi" };
+      return { ok: false, message: error.message || "Favori güncellenemedi" };
     }
   };
 

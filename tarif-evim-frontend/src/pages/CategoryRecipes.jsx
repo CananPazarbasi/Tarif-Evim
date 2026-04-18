@@ -38,7 +38,7 @@ export default function CategoryRecipes() {
       </Link>
 
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 34, margin: 0, color: "#1a1a1a" }}>
+        <h1 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 34, margin: 0, color: "#1a1a1a" }}>
           {categoryLabel}
         </h1>
         <p style={{ margin: "10px 0 0", color: "#6b7280", fontSize: 14 }}>

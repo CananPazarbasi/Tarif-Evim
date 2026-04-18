@@ -4,7 +4,7 @@ export const CATEGORY_OPTIONS = [
   { value: "Sebze kategorisi", label: "Sebze kategorisi" },
   { value: "Baklagiller", label: "Baklagiller" },
   { value: "Deniz mahsülleri", label: "Deniz mahsülleri" },
-  { value: "Corba", label: "Corba" },
+  { value: "Corba", label: "Çorba" },
   { value: "Hamur işleri", label: "Hamur işleri" },
   { value: "Makarna", label: "Makarna" },
   { value: "Glutensiz kategori", label: "Glutensiz kategori" },

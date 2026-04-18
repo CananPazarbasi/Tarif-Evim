@@ -16,13 +16,18 @@ export default function RecipeCard({ recipe }) {
   const categories = Array.isArray(recipe.categories) && recipe.categories.length > 0
     ? recipe.categories
     : [recipe.category].filter(Boolean);
-  const categoryLabel = categories.slice(0, 2).join(" • ");
+  const toDisplayCategory = (value) => {
+    const normalized = String(value || "").trim();
+    if (!normalized) return "";
+    return normalized.toLocaleLowerCase("tr-TR") === "corba" ? "Çorba" : normalized;
+  };
+  const categoryLabel = categories.map(toDisplayCategory).slice(0, 2).join(" • ");
 
   const handleFavoriteClick = async (e) => {
     e.preventDefault();
     const result = await toggleFavorite(recipe);
     if (!result?.ok) {
-      setWarning(result.message || "Lutfen giris yapin.");
+      setWarning(result.message || "Lütfen giriş yapın.");
       window.setTimeout(() => setWarning(""), 2200);
     }
   };
@@ -132,9 +137,9 @@ export default function RecipeCard({ recipe }) {
       {/* Content */}
       <div style={{ padding: "16px 18px 20px" }}>
         <h3 style={{
-          fontFamily: "'Playfair Display', serif",
-          fontSize: 17,
+          fontFamily: "'Roboto', sans-serif",
           fontWeight: 700,
+          fontSize: 17,
           color: "#1a1a1a",
           margin: "0 0 12px",
           lineHeight: 1.3,

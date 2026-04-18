@@ -33,7 +33,7 @@ export default function RecipeDetail() {
         setChatMessages([
           {
             role: "ai",
-            text: `Merhaba! "${nextRecipe?.title || "bu"}" tarifi hakkında sormak istedigin bir sey var mi? 👨‍🍳`,
+            text: `Merhaba! "${nextRecipe?.title || "bu"}" tarifi hakkında sormak istediğin bir şey var mı? 👨‍🍳`,
           },
         ]);
       } catch {
@@ -47,7 +47,7 @@ export default function RecipeDetail() {
   }, [id]);
 
   if (recipeLoading) {
-    return <div style={{ textAlign: "center", padding: 80, color: "#999", fontWeight: 700 }}>Tarif yukleniyor...</div>;
+    return <div style={{ textAlign: "center", padding: 80, color: "#999", fontWeight: 700 }}>Tarif yükleniyor...</div>;
   }
 
   if (!recipe) return (
@@ -59,6 +59,11 @@ export default function RecipeDetail() {
   );
 
   const fav = isFavorite(recipe.id);
+  const displayCategory = (value) => {
+    const normalized = String(value || "").trim();
+    if (!normalized) return "";
+    return normalized.toLocaleLowerCase("tr-TR") === "corba" ? "Çorba" : normalized;
+  };
   const isDietitian = user?.role === "dietitian";
   const canApprove = Boolean(
     isDietitian
@@ -70,7 +75,7 @@ export default function RecipeDetail() {
   const handleToggleFavorite = async () => {
     const result = await toggleFavorite(recipe);
     if (!result?.ok) {
-      setFavoriteWarning(result.message || "Lutfen giris yapin.");
+      setFavoriteWarning(result.message || "Lütfen giriş yapın.");
       window.setTimeout(() => setFavoriteWarning(""), 2200);
     }
   };
@@ -84,13 +89,13 @@ export default function RecipeDetail() {
 
     try {
       if (!user) {
-        throw new Error("AI asistani icin lutfen giris yapin.");
+        throw new Error("AI asistanı için lütfen giriş yapın.");
       }
 
       const aiText = await chatAboutRecipe(recipe.id, userMsg);
       setChatMessages(prev => [...prev, { role: "ai", text: aiText }]);
     } catch (error) {
-      setChatMessages(prev => [...prev, { role: "ai", text: error.message || "Baglanti hatasi. Lutfen tekrar deneyin." }]);
+      setChatMessages(prev => [...prev, { role: "ai", text: error.message || "Bağlantı hatası. Lütfen tekrar deneyin." }]);
     }
     setLoading(false);
   };
@@ -169,12 +174,12 @@ export default function RecipeDetail() {
             fontWeight: 800,
             marginBottom: 12,
             letterSpacing: 0.5,
-          }}>{recipe.category}</div>
+          }}>{displayCategory(recipe.category)}</div>
 
           <h1 style={{
-            fontFamily: "'Playfair Display', serif",
+            fontFamily: "'Roboto', sans-serif",
+            fontWeight: 700,
             fontSize: "clamp(22px, 3vw, 36px)",
-            fontWeight: 900,
             color: "#1a1a1a",
             margin: "0 0 20px",
             lineHeight: 1.2,
@@ -284,7 +289,7 @@ export default function RecipeDetail() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1.4fr", gap: 28, marginBottom: 36 }}>
         {/* Ingredients */}
         <div style={{ background: "white", borderRadius: 24, padding: "28px 28px", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, margin: "0 0 20px", color: "#1a1a1a" }}>
+          <h2 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 20, margin: "0 0 20px", color: "#1a1a1a" }}>
             🧅 Malzemeler
           </h2>
           <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
@@ -313,7 +318,7 @@ export default function RecipeDetail() {
 
         {/* Steps */}
         <div style={{ background: "white", borderRadius: 24, padding: "28px 28px", boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 20, margin: "0 0 20px", color: "#1a1a1a" }}>
+          <h2 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 20, margin: "0 0 20px", color: "#1a1a1a" }}>
             👨‍🍳 Hazırlanışı
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -354,7 +359,7 @@ export default function RecipeDetail() {
             fontSize: 20,
           }}>🤖</div>
           <div>
-            <h3 style={{ color: "white", fontFamily: "'Playfair Display', serif", fontSize: 18, margin: 0 }}>AI Şef Asistanı</h3>
+            <h3 style={{ color: "white", fontFamily: "'Roboto', sans-serif", fontWeight: 700, fontSize: 18, margin: 0 }}>AI Şef Asistanı</h3>
             <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, margin: 0 }}>Bu tarif hakkında soru sor</p>
           </div>
           <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
