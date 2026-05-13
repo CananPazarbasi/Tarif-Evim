@@ -1,4 +1,5 @@
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || "http://localhost:5000/api";
+const API_BASE_URL =
+  process.env.REACT_APP_API_BASE_URL || "https://tarif-evim.onrender.com";
 
 const ACCESS_TOKEN_KEY = "tarif-evim-access-token";
 const REFRESH_TOKEN_KEY = "tarif-evim-refresh-token";
@@ -94,7 +95,10 @@ export const apiRequest = async (
     error.status = response.status;
     error.body = body;
     if (process.env.NODE_ENV === "development") {
-      console.error(`[API Error] ${method} ${buildUrl(path)} -> ${response.status}`, body);
+      console.error(
+        `[API Error] ${method} ${buildUrl(path)} -> ${response.status}`,
+        body,
+      );
     }
     throw error;
   }
@@ -104,7 +108,10 @@ export const apiRequest = async (
 
 export const apiClient = {
   get: (path, options = {}) => apiRequest(path, { ...options, method: "GET" }),
-  post: (path, data, options = {}) => apiRequest(path, { ...options, method: "POST", data }),
-  put: (path, data, options = {}) => apiRequest(path, { ...options, method: "PUT", data }),
-  delete: (path, options = {}) => apiRequest(path, { ...options, method: "DELETE" }),
+  post: (path, data, options = {}) =>
+    apiRequest(path, { ...options, method: "POST", data }),
+  put: (path, data, options = {}) =>
+    apiRequest(path, { ...options, method: "PUT", data }),
+  delete: (path, options = {}) =>
+    apiRequest(path, { ...options, method: "DELETE" }),
 };
